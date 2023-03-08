@@ -1,28 +1,24 @@
 package com.sk.GatePass.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+//@NoArgsConstructor
+//@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
 @Setter
+@Table(name="company")
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="name")
-    private String name;
-
-    @Column(name="short_name")
-    private String shortName;
+    @Column(name="company_name")
+    private String companyName;
 
     @Column(name="phone")
     private String phone;
@@ -30,6 +26,5 @@ public class Company {
     @Column(name="mail")
     private String mail;
 
-   // @OneToMany(mappedBy = "company")
-   // private List<GatePass> GatePasses;
+
 }

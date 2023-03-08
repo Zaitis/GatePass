@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -28,6 +30,11 @@ public class GatePassService {
         return gatePassRepository.findById(id).orElse(null);
     }
     public GatePass addGatePass(GatePass gatePass){
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        Date date = new Date();
+        System.out.println(formatter.format(date));
+        gatePass.setAcceptedDate(date);
+
         return gatePassRepository.save(gatePass);
     }
     public void deleteGatePass(Long id){

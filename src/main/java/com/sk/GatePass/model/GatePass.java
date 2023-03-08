@@ -1,16 +1,15 @@
 package com.sk.GatePass.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+//@NoArgsConstructor
+//@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
 @Setter
 @Table(name = "gate_pass")
@@ -31,18 +30,21 @@ public class GatePass {
     @Column(name="phone")
     private String phone;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name = "car_id", unique=true, referencedColumnName = "id")
     private Car cars;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name = "company_id",  referencedColumnName = "id")
     private Company company;
 
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name = "person_id",  referencedColumnName = "id")
     private Person person;
 
     @Column(name="accepted_date")
-    private String acceptedDate;
+    private Date acceptedDate;
 
 
 

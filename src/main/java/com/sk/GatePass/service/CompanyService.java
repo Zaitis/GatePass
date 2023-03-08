@@ -34,7 +34,7 @@ public class CompanyService {
     public Company updateCompany(Long id, Company newCompany){
         Company oldCompany=companyRepository.findById(id).get();
         oldCompany.setMail(newCompany.getMail());
-        oldCompany.setName(newCompany.getName());
+        oldCompany.setCompanyName(newCompany.getCompanyName());
         oldCompany.setPhone(newCompany.getPhone());
 
         return companyRepository.save(oldCompany);

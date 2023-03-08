@@ -1,19 +1,17 @@
 package com.sk.GatePass.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.Table;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+//@NoArgsConstructor
+//@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
 @Setter
+@Table(name = "person")
 public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +28,5 @@ public class Person {
 
     @Column(name="password")
     private String password;
-
- //   @OneToMany(mappedBy = "person")
-  //  private List<GatePass> GatePasses;
 
 }
