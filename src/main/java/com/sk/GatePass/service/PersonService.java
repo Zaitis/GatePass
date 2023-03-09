@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PersonService {
 
-    @Autowired
+
     private final PersonRepository personRepository;
 
     public List<Person> getPerson(){

@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CompanyService {
 
-    @Autowired
+
     private final CompanyRepository companyRepository;
 
     public Company addCompany(Company company){

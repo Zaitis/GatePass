@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CarService {
 
-    @Autowired
+
     private final CarRepository carRepository;
 
 

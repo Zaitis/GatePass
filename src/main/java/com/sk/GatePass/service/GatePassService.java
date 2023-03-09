@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GatePassService {
 
-    @Autowired
+
     private final GatePassRepository gatePassRepository;
 
 
@@ -32,7 +32,6 @@ public class GatePassService {
     public GatePass addGatePass(GatePass gatePass){
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         Date date = new Date();
-        System.out.println(formatter.format(date));
         gatePass.setAcceptedDate(date);
 
         return gatePassRepository.save(gatePass);

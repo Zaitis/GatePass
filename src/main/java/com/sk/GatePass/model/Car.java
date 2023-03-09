@@ -1,7 +1,6 @@
 package com.sk.GatePass.model;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
@@ -28,6 +27,11 @@ public class Car {
     @Column(name="plate")
     private String plate;
 
+    public Car(String brand, String model, String plate){
+        this.brand=brand;
+        this.model=model;
+        this.plate=plate;
+    }
 
 
 }
