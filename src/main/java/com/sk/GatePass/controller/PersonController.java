@@ -1,5 +1,6 @@
 package com.sk.GatePass.controller;
 
+import com.sk.GatePass.model.Car;
 import com.sk.GatePass.model.Person;
 import com.sk.GatePass.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import java.util.List;
 @Controller
 public class PersonController {
 
-    @Autowired
+
     private PersonService personService;
 
     public PersonController(PersonService personService){
@@ -36,5 +37,21 @@ public class PersonController {
     public ResponseEntity<Person> addPerson(@RequestBody Person newPerson){
         Person person = personService.addPerson(newPerson);
         return new ResponseEntity<>(person, HttpStatus.OK);
+    }
+
+    @PutMapping("/people/{id}")
+    public ResponseEntity<Person> updatePerson(@PathVariable(value="id")Long id, @RequestBody Person newPerson){
+        Person person = personService.updatePersonById(id, newPerson);
+        return new ResponseEntity<>(person, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/people/{id}")
+    public ResponseEntity<Person> deletePerson(@PathVariable(value ="id") Long id){
+        Person deletePerson= personService.getPersonById(id);
+        if (deletePerson!=null){
+            personService.deletePersonById(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

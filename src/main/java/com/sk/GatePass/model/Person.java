@@ -3,11 +3,8 @@ package com.sk.GatePass.model;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
-//@NoArgsConstructor
-//@AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
 @Setter
@@ -23,10 +20,19 @@ public class Person {
     @Column(name="surname")
     private String surname;
 
+
     @Column(name="mail")
     private String mail;
 
     @Column(name="password")
     private String password;
+
+    public Person( String name, String surname, String mail, String password) {
+        this.name = name;
+        this.surname = surname;
+        this.mail = mail;
+        this.password = password;
+    }
+
 
 }

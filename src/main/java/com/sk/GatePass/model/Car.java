@@ -5,10 +5,8 @@ import lombok.*;
 
 import javax.persistence.*;
 
-//@JsonIgnoreProperties({"hibernateLazyInitializer"})
+
 @Entity
-//@AllArgsConstructor
-//@NoArgsConstructor
 @RequiredArgsConstructor
 @Getter
 @Setter
@@ -20,10 +18,8 @@ public class Car {
 
     @Column(name="brand")
     private String brand;
-
     @Column(name="model")
     private String model;
-
     @Column(name="plate")
     private String plate;
 

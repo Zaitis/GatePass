@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.DelegatingServerHttpResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.List;
 @RestController
 public class CarController {
 
-    @Autowired
+
     private final CarService carService;
     public CarController(CarService carService) {
         this.carService = carService;
@@ -28,7 +29,10 @@ public class CarController {
     @GetMapping("/cars/{id}")
     public ResponseEntity<Car> getCar(@PathVariable(value ="id") Long id) {
         Car car= carService.getCarById(id);
-        return new ResponseEntity<>(car,HttpStatus.OK);
+        if(car==null)
+        return new ResponseEntity<>(null,HttpStatus.NOT_FOUND);
+        else
+            return new ResponseEntity<>(car,HttpStatus.OK);
     }
     @PostMapping(value = "/cars")
     public ResponseEntity<Car> addCar(@RequestBody Car car){
@@ -43,9 +47,10 @@ public class CarController {
     @DeleteMapping("/cars/{id}")
     public ResponseEntity<?> deleteCar(@PathVariable(value ="id") Long id) {
         Car deleteCar =carService.getCarById(id);
-        if (deleteCar!=null)
-        carService.deleteCarById(id);
-        else System.out.println("Brak takiego ID");
-        return new ResponseEntity<>(HttpStatus.OK);
+        if (deleteCar!=null) {
+            carService.deleteCarById(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
     }
 }

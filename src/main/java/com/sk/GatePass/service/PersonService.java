@@ -28,4 +28,17 @@ public class PersonService {
     public Person getPersonById(Long id) {
         return personRepository.findById(id).orElse(null);
     }
+
+    public Person updatePersonById(Long id, Person Person) {
+        Person oldPerson=personRepository.findById(id).get();
+        oldPerson.setName(Person.getName());
+        oldPerson.setSurname(Person.getSurname());
+        oldPerson.setMail(Person.getMail());
+        oldPerson.setPassword(Person.getPassword());
+        return  personRepository.save(oldPerson);
+    }
+
+    public void deletePersonById(Long id) {
+        personRepository.deleteById(id);
+    }
 }

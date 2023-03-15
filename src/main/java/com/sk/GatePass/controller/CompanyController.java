@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 public class CompanyController {
-    @Autowired
+
     private final CompanyService companyService;
     public CompanyController(CompanyService companyService) {
         this.companyService = companyService;

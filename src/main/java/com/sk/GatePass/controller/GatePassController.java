@@ -12,7 +12,7 @@ import java.util.List;
 
 @Controller
 public class GatePassController {
-    @Autowired
+
     private final GatePassService gatePassService;
     public GatePassController(GatePassService gatePassService) {
         this.gatePassService = gatePassService;
