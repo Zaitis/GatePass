@@ -2,7 +2,6 @@ package com.sk.GatePass.controller;
 
 import com.sk.GatePass.model.GatePass;
 import com.sk.GatePass.service.GatePassService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -39,11 +38,11 @@ public class GatePassController {
         GatePass newGatePass = gatePassService.addGatePass(gatePass);
         return new ResponseEntity<>(newGatePass, HttpStatus.CREATED);
     }
-    @PutMapping("/gatepasses/{id}")
-    public ResponseEntity<GatePass> updateGatePass(@PathVariable("id") Long id, @RequestBody GatePass newGatePass){
-        GatePass gatePass = gatePassService.updateGatePass(id, newGatePass);
-        return new ResponseEntity<>(gatePass, HttpStatus.OK);
-    }
+//    @PutMapping("/gatepasses/{id}")
+//    public ResponseEntity<GatePass> updateGatePass(@PathVariable("id") Long id, @RequestBody GatePass newGatePass){
+//        GatePass gatePass = gatePassService.updateGatePass(id, newGatePass);
+//        return new ResponseEntity<>(gatePass, HttpStatus.OK);
+//    }
     @DeleteMapping("/gatepasses/{id}")
     public ResponseEntity<?> deleteGatePass(@PathVariable("id")Long id){
         gatePassService.deleteGatePass(id);

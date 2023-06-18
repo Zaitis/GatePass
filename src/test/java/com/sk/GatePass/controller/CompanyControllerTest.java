@@ -16,6 +16,9 @@ import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 public class CompanyControllerTest {
 
@@ -43,7 +46,7 @@ public class CompanyControllerTest {
 
     @Test
     void shouldGetCompanies() {
-        Mockito.when(companyService.getCompanies()).thenReturn(companyList);
+        when(companyService.getCompanies()).thenReturn(companyList);
 
         ResponseEntity<List<Company>> responseEntity = companyController.getCompanies();
 
@@ -54,7 +57,7 @@ public class CompanyControllerTest {
     @Test
     void shouldGetCompany() {
         Long companyId = 1L;
-        Mockito.when(companyService.getCompany(companyId)).thenReturn(company1);
+        when(companyService.getCompany(companyId)).thenReturn(company1);
 
         ResponseEntity<Company> responseEntity = companyController.getCompany(companyId);
 
@@ -64,7 +67,7 @@ public class CompanyControllerTest {
 
     @Test
     void shouldAddCompany() {
-        Mockito.when(companyService.addCompany(company1)).thenReturn(company1);
+        when(companyService.addCompany(company1)).thenReturn(company1);
 
         ResponseEntity<Company> responseEntity = companyController.addCompany(company1);
 
@@ -78,7 +81,7 @@ public class CompanyControllerTest {
         Company updatedCompany = new Company("CBA Company", "333555444", "company@company.com");
         updatedCompany.setId(companyId);
 
-        Mockito.when(companyService.updateCompany(companyId, updatedCompany)).thenReturn(updatedCompany);
+        when(companyService.updateCompany(companyId, updatedCompany)).thenReturn(updatedCompany);
 
         ResponseEntity<Company> responseEntity = companyController.updateCompany(companyId, updatedCompany);
 
@@ -89,11 +92,19 @@ public class CompanyControllerTest {
     @Test
     void shouldDeleteCompany() {
         Long companyId = 1L;
-        Mockito.when(companyService.getCompany(companyId)).thenReturn(company1);
+        when(companyService.getCompany(companyId)).thenReturn(company1);
 
         ResponseEntity<?> responseEntity = companyController.deleteCompany(companyId);
 
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Mockito.verify(companyService, Mockito.times(1)).deleteCompany(companyId);
+        verify(companyService, Mockito.times(1)).deleteCompany(companyId);
+    }
+
+    @Test
+    void shouldNotFoundWhenDeleteCompany() {
+        Long companyId = 2L;
+        when(companyService.getCompany(companyId)).thenReturn(null);
+        ResponseEntity<?> responseEntity = companyController.deleteCompany(companyId);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
     }
 }

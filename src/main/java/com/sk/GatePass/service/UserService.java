@@ -1,43 +1,41 @@
 package com.sk.GatePass.service;
-
 import com.sk.GatePass.model.User;
-import com.sk.GatePass.repository.PersonRepository;
+import com.sk.GatePass.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PersonService {
+public class UserService {
 
+    private final UserRepository userRepository;
 
-    private final PersonRepository personRepository;
-
-    public List<User> getPerson(){
-        return personRepository.findAll();
-
+    public List<User> getUser(){
+        return userRepository.findAll();
     }
 
-    public User addPerson(User user){
-
-        return personRepository.save(user);
+    public User addUser(User user){
+        return userRepository.save(user);
     }
 
-    public User getPersonById(Long id) {
-        return personRepository.findById(id).orElse(null);
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
     }
 
-    public User updatePersonById(Long id, User User) {
-        User oldUser =personRepository.findById(id).get();
+    public User updateUserById(Long id, User User) {
+        User oldUser = userRepository.findById(id).get();
         oldUser.setName(User.getName());
         oldUser.setSurname(User.getSurname());
         oldUser.setMail(User.getMail());
         oldUser.setPassword(User.getPassword());
-        return  personRepository.save(oldUser);
+        return  userRepository.save(oldUser);
     }
 
-    public void deletePersonById(Long id) {
-        personRepository.deleteById(id);
+    public void deleteUserById(Long id) {
+        userRepository.deleteById(id);
     }
 }

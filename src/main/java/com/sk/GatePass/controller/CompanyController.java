@@ -2,11 +2,8 @@ package com.sk.GatePass.controller;
 
 import com.sk.GatePass.model.Company;
 import com.sk.GatePass.service.CompanyService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,9 +38,12 @@ public class CompanyController {
     @DeleteMapping("/companies/{id}")
     public ResponseEntity<?> deleteCompany(@PathVariable(value = "id")Long id) {
         Company deleteCompany = companyService.getCompany(id);
-        if(deleteCompany!=null)
-        companyService.deleteCompany(id);
-        else System.out.println("Brak firmy");
-        return new ResponseEntity<>(HttpStatus.OK);
+        if(deleteCompany!=null) {
+            companyService.deleteCompany(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
     }
 }

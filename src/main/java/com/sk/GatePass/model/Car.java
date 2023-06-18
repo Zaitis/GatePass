@@ -1,9 +1,15 @@
 package com.sk.GatePass.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-import lombok.*;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 
 @Entity
@@ -16,17 +22,17 @@ public class Car {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="brand")
+    @Column(name = "brand")
     private String brand;
-    @Column(name="model")
+    @Column(name = "model")
     private String model;
-    @Column(name="plate")
+    @Column(name = "plate")
     private String plate;
 
-    public Car(String brand, String model, String plate){
-        this.brand=brand;
-        this.model=model;
-        this.plate=plate;
+    public Car(String brand, String model, String plate) {
+        this.brand = brand;
+        this.model = model;
+        this.plate = plate;
     }
 
 

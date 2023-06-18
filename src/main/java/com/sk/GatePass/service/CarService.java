@@ -3,11 +3,9 @@ package com.sk.GatePass.service;
 import com.sk.GatePass.model.Car;
 import com.sk.GatePass.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,12 +32,17 @@ public class CarService {
     }
 
     public Car updateCarById(Long id, Car car) {
+        Car oldCar = updateOldCar(id, car);
+
+        return carRepository.save(oldCar);
+    }
+
+    private Car updateOldCar(Long id, Car car) {
         Car oldCar=carRepository.findById(id).get();
         oldCar.setBrand(car.getBrand());
         oldCar.setModel(car.getModel());
         oldCar.setPlate(car.getPlate());
-
-        return carRepository.save(oldCar);
+        return oldCar;
     }
 
 }
