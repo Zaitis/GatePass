@@ -4,12 +4,11 @@ import com.sk.GatePass.model.GatePass;
 import com.sk.GatePass.service.GatePassService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 public class GatePassController {
 
     private final GatePassService gatePassService;
