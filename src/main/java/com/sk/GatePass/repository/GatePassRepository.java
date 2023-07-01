@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface GatePassRepository extends JpaRepository<GatePass, Long> {
 
-    List<GatePass> findByCompanyId(Long CompanyId);
-    List<GatePass> findByUserId(Long PersonId);
+    List<GatePass> findByCarId(Long CarId);
+
+
 }

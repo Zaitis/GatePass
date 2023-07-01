@@ -1,6 +1,6 @@
 package com.sk.GatePass.controller;
 
-import com.sk.GatePass.controller.dto.UserDto;
+import com.sk.GatePass.dto.UserDto;
 import com.sk.GatePass.model.Role;
 import com.sk.GatePass.model.User;
 import com.sk.GatePass.service.UserService;

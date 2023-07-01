@@ -2,7 +2,7 @@ package com.sk.GatePass.controller;
 
 import com.sk.GatePass.model.Role;
 import com.sk.GatePass.model.User;
-import com.sk.GatePass.controller.dto.UserDto;
+import com.sk.GatePass.dto.UserDto;
 import com.sk.GatePass.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -56,12 +56,11 @@ public class UserController {
 
     private  User createNewUser(UserDto UserDto) {
         return   User.builder()
-                .name(UserDto.name())
-                .surname(UserDto.surname())
+                .firstName(UserDto.firstName())
+                .lastName(UserDto.lastName())
                 .mail(UserDto.mail())
                 .password(UserDto.password())
                 .phone(UserDto.phone())
-                .cardNumber(UserDto.cardNumber())
                 .role(Role.USER)
                 .build();
 

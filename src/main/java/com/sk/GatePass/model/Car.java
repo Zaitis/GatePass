@@ -5,6 +5,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,10 @@ public class Car {
     private String model;
     @Column(name = "plate")
     private String plate;
+
+    @OneToMany
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Car(String brand, String model, String plate) {
         this.brand = brand;

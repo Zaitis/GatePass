@@ -5,10 +5,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.*;
 
-
+import java.util.List;
 
 
 @Entity
@@ -26,6 +29,9 @@ public class Company {
     private String phone;
     @Column(name="mail")
     private String mail;
+
+    @OneToMany(mappedBy = "company")
+    private List<User> users;
 
     public Company(String companyName, String phone, String mail){
         this.companyName=companyName;

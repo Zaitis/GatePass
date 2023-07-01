@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -29,17 +30,8 @@ public class GatePass {
     private Long id;
 
     @OneToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "user_id", unique = true, referencedColumnName ="id" )
-    private User user;
-
-    @OneToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "car_id", unique = true, referencedColumnName = "id")
     private Car cars;
-
-    @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "company_id", referencedColumnName = "id")
-    private Company company;
-
 
     @Column(name = "is_accepted")
     private boolean isAccepted;

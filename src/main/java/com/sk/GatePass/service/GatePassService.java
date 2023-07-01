@@ -22,7 +22,8 @@ public class GatePassService {
     }
 
     public List<GatePass> getGatePassByCompanyId(Long id){
-        return gatePassRepository.findByCompanyId(id);
+        return null;
+    //    return gatePassRepository.findByCompanyId(id);
     }
     public GatePass getGatePass(Long id){
         return gatePassRepository.findById(id).orElse(null);
