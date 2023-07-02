@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -21,22 +22,17 @@ public class GatePassService {
         return gatePassRepository.findAll();
     }
 
-    public List<GatePass> getGatePassByCompanyId(Long id){
-        return gatePassRepository.findByCompanyId(id);
-    }
     public GatePass getGatePass(Long id){
         return gatePassRepository.findById(id).orElse(null);
     }
-    public GatePass addGatePass(GatePass gatePass){
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        Date date = new Date();
-        gatePass.setAcceptedDate(date);
 
+    public GatePass addGatePass(GatePass gatePass){
         return gatePassRepository.save(gatePass);
     }
     public void deleteGatePass(Long id){
         gatePassRepository.deleteById(id);
     }
+
 //    public GatePass updateGatePass(Long id, GatePass gatePass){
 //        GatePass oldGatePass= gatePassRepository.findById(id).orElse(null);
 //        oldGatePass.setCars(gatePass.getCars());
