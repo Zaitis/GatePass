@@ -42,5 +42,13 @@ public class CompanyService {
         return companyRepository.save(oldCompany);
 
     }
+
+    public List<Company> filterCompany(String filterText){
+        if(filterText == null || filterText.isEmpty()) {
+            return companyRepository.findAll();
+        } else {
+            return companyRepository.findAll();
+        }
+    }
 }
 

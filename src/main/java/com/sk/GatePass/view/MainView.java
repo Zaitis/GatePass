@@ -47,5 +47,7 @@ public class MainView extends VerticalLayout {
                         addButton
                 )
         );
+        add( new Button("Welcome"));
+        add( new H1("Vaadin Todo"));
     }
 }

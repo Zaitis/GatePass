@@ -37,8 +37,15 @@ public class GatePassController {
 
     @PostMapping("/gatepasses")
     public ResponseEntity<GatePass> addGatePass(@RequestBody GatePassDto dto){
-        GatePass gatePass = gatePassService.addGatePass(createGatePass(dto));
-        return new ResponseEntity<>(gatePass, HttpStatus.CREATED);
+
+        List<GatePass> list =gatePassService.getGatePasses();
+        boolean isExist = list.stream().anyMatch(gatePass1 -> gatePass1.getCars().getId().equals(dto.car()));
+       if(!isExist) {
+           GatePass gatePass = gatePassService.addGatePass(createGatePass(dto));
+           return new ResponseEntity<>(gatePass, HttpStatus.CREATED);
+       }
+       else
+           throw new IllegalStateException("GatePass already exists for the given Car.");
     }
 
     private GatePass createGatePass(GatePassDto dto) {
