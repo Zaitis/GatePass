@@ -3,10 +3,10 @@ package com.sk.GatePass.service;
 import com.sk.GatePass.model.Company;
 import com.sk.GatePass.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +24,9 @@ public class CompanyService {
     }
 
     public Company getCompany(Long id){
-        return companyRepository.findById(id).orElse(null);
+        System.out.println(companyRepository.findById(id).orElseThrow());
+
+        return companyRepository.findById(id).orElseThrow();
     }
 
     public void deleteCompany(Long id){

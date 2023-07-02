@@ -2,8 +2,10 @@ package com.sk.GatePass.controller;
 
 import com.sk.GatePass.model.Company;
 import com.sk.GatePass.service.CompanyService;
+import jakarta.persistence.Transient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,11 +17,14 @@ public class CompanyController {
     public CompanyController(CompanyService companyService) {
         this.companyService = companyService;
     }
+
+    @Transactional
     @GetMapping("/companies")
     public ResponseEntity<List<Company>> getCompanies(){
         List<Company> list = companyService.getCompanies();
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
+    @Transactional
     @GetMapping("/companies/{id}")
     public ResponseEntity<Company> getCompany(@PathVariable(value="id")Long id){
         Company company = companyService.getCompany(id);

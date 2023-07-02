@@ -1,18 +1,20 @@
 package com.sk.GatePass.dto;
 
-import com.sk.GatePass.model.Car;
+import com.sk.GatePass.model.Role;
 import lombok.Builder;
 
 import java.util.List;
 
 
 @Builder
-public record UserDto (
+public record EmployeeDto(
         String firstName,
         String lastName,
         String phone,
         String mail,
         String password,
-        List<Car> cars
+        List<CarDto> cars,
+        Role role,
+        Long company
 ){}
 

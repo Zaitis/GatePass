@@ -12,17 +12,22 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
+@AllArgsConstructor
 @RequiredArgsConstructor
 @Getter
 @Setter
+@Builder
 @Table(name = "gate_pass")
 public class GatePass {
     @Id
@@ -33,11 +38,15 @@ public class GatePass {
     @JoinColumn(name = "car_id", unique = true, referencedColumnName = "id")
     private Car cars;
 
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
     @Column(name = "is_accepted")
     private boolean isAccepted;
 
     @Column(name = "accepted_date")
-    private Date acceptedDate;
+    private LocalDateTime acceptedDate;
+
 
 
 }
