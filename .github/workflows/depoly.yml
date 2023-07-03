@@ -1,9 +1,10 @@
-name: Deploy to GitHub Pages
+name: Deploy to alwaysdata.com
 
 on:
   push:
     branches:
       - master
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,13 +16,18 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
-          java-version: 17
+          java-version: 11
 
       - name: Build project
-        run: mvn clean package -DskipTests=true
+        run: ./mvnw clean package -DskipTests
 
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@3.7.1
+      - name: Deploy to alwaysdata.com
+        uses: appleboy/ssh-action@master
         with:
-          branch: gh-pages
-          folder: target 
+          host: ${{ secrets.ALWAYSDATA_HOST }} # Zdefiniuj to w ustawieniach repozytorium jako tajne
+          username: ${{ secrets.ALWAYSDATA_USERNAME }} # Zdefiniuj to w ustawieniach repozytorium jako tajne
+          password: ${{ secrets.ALWAYSDATA_PASSWORD }} # Zdefiniuj to w ustawieniach repozytorium jako tajne
+          script: |
+            cd public_html
+            rm -rf *
+            unzip ../target/your-app-name.war
