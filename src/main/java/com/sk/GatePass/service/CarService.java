@@ -1,6 +1,7 @@
 package com.sk.GatePass.service;
 
 import com.sk.GatePass.model.Car;
+import com.sk.GatePass.model.Company;
 import com.sk.GatePass.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,14 @@ public class CarService {
         oldCar.setModel(car.getModel());
         oldCar.setPlate(car.getPlate());
         return oldCar;
+    }
+
+    public List<Car> filterCar(String filterText) {
+        if (filterText == null || filterText.isEmpty()) {
+            return carRepository.findAll();
+        } else {
+            return carRepository.findAll();
+        }
     }
 
 }

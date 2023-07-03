@@ -1,8 +1,8 @@
-package com.sk.GatePass.view.company;
+package com.sk.GatePass.view.car;
 
 
+import com.sk.GatePass.model.Car;
 import com.sk.GatePass.model.Company;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -19,25 +19,25 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
 
-public class CompanyForm extends FormLayout {
+public class CarForm extends FormLayout {
 
-    Binder<Company> binder = new BeanValidationBinder<>(Company.class);
-    TextField companyName = new TextField("Company Name");
-    TextField phone = new TextField("Phone numer");
-    EmailField mail = new EmailField("Email");
+    Binder<Car> binder = new BeanValidationBinder<>(Car.class);
+    TextField brand = new TextField("Car Brand");
+    TextField model = new TextField("Car Model");
+    TextField plate = new TextField("Car Plate");
 
     Button save = new Button("Save");
     Button delete = new Button("Delete");
     Button cancel = new Button("Cancel");
-    private Company company;
+    private Car car;
 
-    public CompanyForm() {
+    public CarForm() {
 
         binder.bindInstanceFields(this);
         add(
-                companyName,
-                phone,
-                mail,
+                brand,
+                model,
+                plate,
 
                 createButtonLayout()
         );
@@ -45,9 +45,9 @@ public class CompanyForm extends FormLayout {
 
     }
 
-    public void setCompany(Company company){
-        this.company = company;
-    binder.readBean(company);
+    public void setCompany(Car car){
+        this.car = car;
+    binder.readBean(car);
     }
 
 
@@ -57,7 +57,7 @@ public class CompanyForm extends FormLayout {
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         save.addClickListener(event ->validateAndSave());
-        delete.addClickListener(event ->fireEvent(new DeleteEvent(this, company)));
+        delete.addClickListener(event ->fireEvent(new DeleteEvent(this, car)));
         cancel.addClickListener(event -> fireEvent(new CloseEvent(this)));
         save.addClickShortcut(Key.ENTER);
         cancel.addClickShortcut(Key.ESCAPE);
@@ -67,44 +67,43 @@ public class CompanyForm extends FormLayout {
 
     private void validateAndSave() {
         try {
-            System.out.println("tutaj jestesmy");
-            System.out.println(company);
-            binder.writeBean(company);
-            fireEvent(new SaveEvent(this, company));
+
+            binder.writeBean(car);
+            fireEvent(new SaveEvent(this, car));
         } catch (ValidationException e) {
             throw new RuntimeException(e);
         }
     }
 
     // Events
-    public static abstract class CompanyFormEvent extends ComponentEvent<CompanyForm> {
-        private Company company;
+    public static abstract class CarFormEvent extends ComponentEvent<CarForm> {
+        private Car car;
 
-        protected CompanyFormEvent(CompanyForm source, Company company) {
+        protected CarFormEvent(CarForm source, Car car) {
             super(source, false);
-            this.company = company;
+            this.car = car;
         }
 
-        public Company getCompany() {
-            return company;
-        }
-    }
-
-    public static class SaveEvent extends CompanyFormEvent {
-        SaveEvent(CompanyForm source, Company company) {
-            super(source, company);
+        public Car getCar() {
+            return car;
         }
     }
 
-    public static class DeleteEvent extends CompanyFormEvent {
-        DeleteEvent(CompanyForm source, Company company) {
-            super(source, company);
+    public static class SaveEvent extends CarFormEvent {
+        SaveEvent(CarForm source, Car car) {
+            super(source, car);
+        }
+    }
+
+    public static class DeleteEvent extends CarFormEvent {
+        DeleteEvent(CarForm source, Car car) {
+            super(source, car);
         }
 
     }
 
-    public static class CloseEvent extends CompanyFormEvent {
-        CloseEvent(CompanyForm source) {
+    public static class CloseEvent extends CarFormEvent {
+        CloseEvent(CarForm source) {
             super(source, null);
         }
     }

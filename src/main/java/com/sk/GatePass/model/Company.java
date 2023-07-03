@@ -20,8 +20,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @Setter
+@Builder
 @ToString
 @Table(name = "company", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
+@AllArgsConstructor
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

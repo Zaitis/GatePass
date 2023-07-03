@@ -1,5 +1,6 @@
 package com.sk.GatePass.service;
 
+import com.sk.GatePass.model.Company;
 import com.sk.GatePass.model.GatePass;
 import com.sk.GatePass.repository.GatePassRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,14 @@ public class GatePassService {
     }
     public void deleteGatePass(Long id){
         gatePassRepository.deleteById(id);
+    }
+
+    public List<GatePass> filterGatePass(String filterText){
+        if(filterText == null || filterText.isEmpty()) {
+            return gatePassRepository.findAll();
+        } else {
+            return gatePassRepository.findAll();
+        }
     }
 
 //    public GatePass updateGatePass(Long id, GatePass gatePass){
