@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.ALWAYSDATA_USERNAME }}
           password: ${{ secrets.ALWAYSDATA_PASSWORD }}
           local-dir: ./GatePass
-          server-dir: /home/GatePass
+          server-dir: /home/GatePass/
           protocol: ftp
 
 
