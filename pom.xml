@@ -170,7 +170,7 @@
 	</build>
 	<profiles>
 		<profile>
-			<id>dev</id>
+			<id>production</id>
 
 		</profile>
 
