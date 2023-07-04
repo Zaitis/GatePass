@@ -49,6 +49,7 @@ jobs:
           local-dir: ./
           server-dir: /home/GatePass/
           protocol: ftp
+          command-options: '--spring.profiles.active=production'
 
 
 
