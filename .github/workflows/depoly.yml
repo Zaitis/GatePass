@@ -25,12 +25,19 @@ jobs:
           echo VAADIN_LICENSE_CHECKER_OFFLINE=true >> $GITHUB_ENV
           echo VAADIN_OFFLINE_KEY=${{ secrets.VAADIN_PRO_KEY }} >> $GITHUB_ENV
 
+ 
+   
+
+
+
       - name: Build with Maven
-        run: mvn clean compile package -Pproduction
+        run: mvn clean compile package -Pdev
         env:
+          SPRING_PROFILES_ACTIVE: dev
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DATABASE_USER: ${{ secrets.DATABASE_USER }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
