@@ -17,19 +17,6 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: Set Vaadin Production Mode
-        run: echo VAADIN_PRODUCTION_MODE=true >> $GITHUB_ENV
-
-      - name: Set Vaadin License Key
-        run: |
-          echo VAADIN_LICENSE_CHECKER_OFFLINE=true >> $GITHUB_ENV
-          echo VAADIN_OFFLINE_KEY=${{ secrets.VAADIN_PRO_KEY }} >> $GITHUB_ENV
-
- 
-   
-
-
-
       - name: Build with Maven
         run: mvn clean compile package -Pdev
         env:
