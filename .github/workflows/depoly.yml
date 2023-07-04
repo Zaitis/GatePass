@@ -44,9 +44,12 @@ jobs:
       - name: FTP Deploy to AlwaysData
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
         with:
-          ftp-server: ftp://${{ secrets.SSH_HOST }}
-          ftp-username: ${{ secrets.ALWAYDATA_USERNAME }}
-          ftp-password: ${{ secrets.ALWAYDATA_PASSWORD }}
+          server: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.ALWAYDATA_USERNAME }}
+          password: ${{ secrets.ALWAYDATA_PASSWORD }}
           local-dir: ./GatePass
+          server-dir: /home/GatePass
+          protocol: ftp
+
 
 
