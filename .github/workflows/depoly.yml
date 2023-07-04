@@ -20,7 +20,6 @@ jobs:
       - name: Build with Maven
         run: mvn clean compile package -Pproduction
         env:
-          SPRING_PROFILES_ACTIVE: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DATABASE_USER: ${{ secrets.DATABASE_USER }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
