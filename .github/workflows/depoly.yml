@@ -41,10 +41,12 @@ jobs:
         with:
           name: GatePass
 
-      - name: Deploy to AlwaysData
-        run: |
-          scp my-artifact.jar myuser@ssh-alwaydata.com:/home/myuser/my-app.jar
-          ssh myuser@ssh-alwaydata.com "java -jar /home/myuser/my-app.jar"
-        env:
-          AD_USER: ${{ secrets.ALWAYDATA_USERNAME }}
-          AD_PASS: ${{ secrets.ALWAYDATA_PASSWORD }}
+      - name: FTP Deploy to AlwaysData
+        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+        with:
+          ftp-server: ftp://${{ secrets.SSH_HOST }}
+          ftp-username: ${{ secrets.ALWAYDATA_USERNAME }}
+          ftp-password: ${{ secrets.ALWAYDATA_PASSWORD }}
+          local-dir: ./GatePass
+
+
