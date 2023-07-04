@@ -47,7 +47,7 @@ jobs:
           server: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.ALWAYSDATA_USERNAME }}
           password: ${{ secrets.ALWAYSDATA_PASSWORD }}
-          local-dir: ./GatePass
+          local-dir: ./
           server-dir: /home/GatePass/
           protocol: ftp
 
