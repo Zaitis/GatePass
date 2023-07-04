@@ -22,11 +22,8 @@ public class SecurityConfig  extends VaadinWebSecurity {
         http.authorizeHttpRequests()
                 .requestMatchers("/images/*.png").permitAll();
 
-
         super.configure(http);
         setLoginView(http, LoginView.class);
-
-
     }
 
     @Bean
