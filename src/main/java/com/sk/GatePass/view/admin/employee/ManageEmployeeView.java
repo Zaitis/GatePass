@@ -14,7 +14,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.annotation.security.RolesAllowed;
 
 @PageTitle("Manage Employee")
@@ -70,7 +69,7 @@ public class ManageEmployeeView extends VerticalLayout {
     }
 
     private void configureForm() {
-        form = new EmployeeForm();
+        form = new EmployeeForm(companyService);
         form.setWidth("25em");
 
         form.addSaveListener(this::saveCompany);
@@ -86,9 +85,7 @@ public class ManageEmployeeView extends VerticalLayout {
     }
 
     private void saveCompany(EmployeeForm.SaveEvent event){
-        Employee employee = event.getEmployee();
-        employee.setCompany(companyService.getCompany(1L));
-        employeeService.addEmployee(event.getEmployee());
+        employeeService.updateEmployeeById(event.getEmployee().getId(),event.getEmployee());
         updateCars();
         closeEditor();
     }

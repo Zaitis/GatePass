@@ -58,7 +58,7 @@ public class GatePassForm extends FormLayout {
         reject.addThemeVariants(ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-    //    accept.addClickListener(event ->validateAndSave());
+//        accept.addClickListener(event ->validateAndSave());
      //   reject.addClickListener(event ->fireEvent(new DeleteEvent(this, company)));
         cancel.addClickListener(event -> fireEvent(new CloseEvent(this)));
         accept.addClickShortcut(Key.ENTER);

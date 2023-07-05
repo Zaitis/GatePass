@@ -40,8 +40,8 @@ public class Car {
     private String model;
     @Column(name = "plate")
     private String plate;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+//, cascade = CascadeType.ALL
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="employee_id")
     @JsonBackReference
     private Employee employee;

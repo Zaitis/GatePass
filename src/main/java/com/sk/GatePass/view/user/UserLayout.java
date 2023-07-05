@@ -2,7 +2,6 @@ package com.sk.GatePass.view.user;
 
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -20,7 +19,7 @@ public class UserLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        RouterLink addCar = new RouterLink("add car", AddCarView.class);
+        RouterLink addCar = new RouterLink("Add Car", AddCarView.class);
         RouterLink createGatePass = new RouterLink("create gate pass", CreateGatePassView.class);
         RouterLink dashboard = new RouterLink("dashboard", DashboardView.class);
         RouterLink updatePersonalData = new RouterLink("update personal data", UpdatePersonalDataView.class);
@@ -28,9 +27,9 @@ public class UserLayout extends AppLayout {
 
 
         addToDrawer(new VerticalLayout(
+                dashboard,
                 addCar,
                 createGatePass,
-                dashboard,
                 updatePersonalData
 
         ));

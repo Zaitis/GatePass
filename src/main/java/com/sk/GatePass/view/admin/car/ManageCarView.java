@@ -1,4 +1,4 @@
-package com.sk.GatePass.view.car;
+package com.sk.GatePass.view.admin.car;
 
 
 import com.sk.GatePass.model.Car;
@@ -13,7 +13,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.annotation.security.RolesAllowed;
 
 @PageTitle("Manage Cars")
@@ -26,18 +25,15 @@ public class ManageCarView extends VerticalLayout {
     CarForm form;
     private CarService carService;
 
-
     public ManageCarView(CarService carService){
         this.carService = carService;
 
-
         addClassName("car-view");
-    setSizeFull();
+        setSizeFull();
+        configureGrid();
+        configureForm();
 
-    configureGrid();
-    configureForm();
-
-    add(
+        add(
             getToolBar(),
             getContent()
         );
@@ -69,11 +65,9 @@ public class ManageCarView extends VerticalLayout {
     private void configureForm() {
         form = new CarForm();
         form.setWidth("25em");
-
         form.addSaveListener(this::saveCompany);
         form.addDeleteListener(this::deleteCompany);
         form.addCloseListener(e -> closeEditor());
-
     }
 
     private void deleteCompany(CarForm.DeleteEvent event) {

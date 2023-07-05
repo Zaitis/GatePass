@@ -1,4 +1,4 @@
-package com.sk.GatePass.view.car;
+package com.sk.GatePass.view.admin.car;
 
 
 import com.sk.GatePass.model.Car;

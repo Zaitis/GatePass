@@ -19,6 +19,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.annotation.security.PermitAll;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @PageTitle("Manage Gate Pass")
@@ -111,8 +112,10 @@ public class ManageGatePassView extends VerticalLayout {
         grid.addColumn(gatePass -> gatePass.getCars().getPlate()).setHeader("Plate");
         grid.addColumn(gatePass -> dateTimeConverter.convertToModel(gatePass.getCreatedDate(), null))
                 .setHeader("Created Date");
-        grid.addColumn(gatePass -> dateTimeConverter.convertToModel(gatePass.getAcceptedDate(), null))
-                .setHeader("Accepted Date");
+        grid.addColumn(gatePass -> {
+            LocalDateTime acceptedDate = gatePass.getAcceptedDate();
+            return acceptedDate != null ? dateTimeConverter.convertToModel(acceptedDate, null) : "-";
+        }).setHeader("Accepted Date");
 
         grid.asSingleSelect().addValueChangeListener(e -> editContact(e.getValue()));
     }

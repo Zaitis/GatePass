@@ -53,8 +53,8 @@ public class Employee {
     @JoinColumn(name="company_id")
     @JsonBackReference
     private Company company;
-
-    @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+//, cascade = CascadeType.ALL
+    @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Car> cars;
 

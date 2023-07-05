@@ -1,13 +1,16 @@
 package com.sk.GatePass.view.admin.employee;
 
 
+import com.sk.GatePass.model.Company;
 import com.sk.GatePass.model.Employee;
+import com.sk.GatePass.service.CompanyService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -16,6 +19,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 public class EmployeeForm extends FormLayout {
@@ -25,20 +29,28 @@ public class EmployeeForm extends FormLayout {
     TextField lastName = new TextField("Last Name");
     TextField phone = new TextField("Phone");
     EmailField mail = new EmailField("E-mail");
+    ComboBox<Company> company = new ComboBox<>("Company");
 
     Button save = new Button("Save");
     Button delete = new Button("Delete");
     Button cancel = new Button("Cancel");
     private Employee employee;
 
-    public EmployeeForm() {
+    @Autowired
+    private CompanyService companyService;
 
+
+    public EmployeeForm(CompanyService companyService) {
+        this.companyService = companyService;
         binder.bindInstanceFields(this);
+        company.setItems(this.companyService.getCompanies());
+        company.setItemLabelGenerator(Company::getCompanyName);
         add(
                firstName,
                 lastName,
                 phone,
                 mail,
+                company,
 
                 createButtonLayout()
         );

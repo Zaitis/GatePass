@@ -14,11 +14,11 @@ public class CarService {
 
 
     private final CarRepository carRepository;
-
-
-    public Car addCar(Car car){
+    public Car addCar(Car car) {
         return carRepository.save(car);
     }
+
+
 
     public List<Car> getCars() {
         return carRepository.findAll();
