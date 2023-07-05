@@ -14,20 +14,20 @@ public class LoginView extends VerticalLayout implements BeforeEnterListener {
 
 
 
-private  LoginForm login = new LoginForm();
+    private  LoginForm login = new LoginForm();
 
     public LoginView() {
-     addClassName("login-view");
-     setSizeFull();
-     setAlignItems(Alignment.CENTER);
-     setJustifyContentMode(JustifyContentMode.CENTER);
+        addClassName("login-view");
+        setSizeFull();
+        setAlignItems(Alignment.CENTER);
+        setJustifyContentMode(JustifyContentMode.CENTER);
 
-     login.setAction("login");
+        login.setAction("login");
 
-     add(
-             new H1("Parking Manager"),
-             login
-     );
+        add(
+                new H1("Parking Manager"),
+                login
+        );
 
     }
 

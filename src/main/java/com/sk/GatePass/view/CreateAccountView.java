@@ -3,8 +3,10 @@ package com.sk.GatePass.view;
 
 import com.sk.GatePass.controller.EmployeeController;
 import com.sk.GatePass.dto.EmployeeDto;
+import com.sk.GatePass.model.Company;
 import com.sk.GatePass.model.Employee;
 import com.sk.GatePass.model.Role;
+import com.sk.GatePass.service.CompanyService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -36,13 +38,19 @@ public class CreateAccountView extends Div {
     private EmailField mail = new EmailField("Email address");
     private PasswordField password = new PasswordField("password");
     private PhoneNumberField phone = new PhoneNumberField("Phone number");
+    private ComboBox<Company> company = new ComboBox<>("Company");
 
     private Button cancel = new Button("Cancel");
     private Button create = new Button("Create");
 
     private Binder<Employee> binder = new Binder<>(Employee.class);
+    private EmployeeController employeeController;
+    private CompanyService companyService;
 
-    public CreateAccountView(EmployeeController employeeController) {
+
+    public CreateAccountView(EmployeeController employeeController, CompanyService companyService) {
+        this.employeeController = employeeController;
+        this.companyService = companyService;
         addClassName("create-account-view");
 
         add(createTitle());
@@ -54,8 +62,6 @@ public class CreateAccountView extends Div {
 
         cancel.addClickListener(e -> clearForm());
         create.addClickListener(e -> {
-            System.out.println(binder.getBean());
-            System.out.println(getBuild());
             employeeController.addEmployee(getBuild());
 
             Notification.show(binder.getBean().getClass().getSimpleName() + " details stored.");
@@ -70,7 +76,7 @@ public class CreateAccountView extends Div {
                 .mail(binder.getBean().getMail())
                 .password(binder.getBean().getPassword())
                 .phone(binder.getBean().getPhone())
-                .company(2L)
+                .company(binder.getBean().getCompany().getId())
                 .role(binder.getBean().getRole() != null ? binder.getBean().getRole() : Role.USER)
                 .build();
     }
@@ -86,7 +92,9 @@ public class CreateAccountView extends Div {
     private Component createFormLayout() {
         FormLayout formLayout = new FormLayout();
         mail.setErrorMessage("Please enter a valid email address");
-        formLayout.add(firstName, lastName, password, phone, mail);
+        company.setItems(companyService.getCompanies());
+        company.setItemLabelGenerator(Company::getCompanyName);
+        formLayout.add(firstName, lastName, password, phone, mail, company);
         return formLayout;
     }
 

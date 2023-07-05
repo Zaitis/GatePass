@@ -61,4 +61,7 @@ public class Employee {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    public boolean checkPassword(String password) {
+        return true;
+    }
 }

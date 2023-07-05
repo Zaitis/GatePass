@@ -15,10 +15,10 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 @PageTitle("Manage Employee")
-@AnonymousAllowed
-//@RolesAllowed("ADMIN")
+@RolesAllowed("ADMIN")
 @Route(value = "manage-employees", layout = AdminLayout.class)
 public class ManageEmployeeView extends VerticalLayout {
 

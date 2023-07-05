@@ -1,3 +1,5 @@
+--liquibase formatted sql
+--changeset zaitis:1
 CREATE TABLE employee (
        id bigserial not null,
         first_name varchar(255),

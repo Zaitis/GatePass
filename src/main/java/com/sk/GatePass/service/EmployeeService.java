@@ -6,6 +6,7 @@ import com.sk.GatePass.repository.EmployeeRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class EmployeeService {
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private final EmployeeRepository employeeRepository;
 
@@ -22,6 +24,7 @@ public class EmployeeService {
     }
 
     public Employee addEmployee(Employee employee){
+        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
         return employeeRepository.save(employee);
     }
 
@@ -30,11 +33,12 @@ public class EmployeeService {
     }
 
     public Optional<Employee> updateEmployeeById(Long id, Employee newEmployeeDetails) {
+        String encode = passwordEncoder.encode(newEmployeeDetails.getPassword());
         return employeeRepository.findById(id).map(user -> {
             user.setFirstName(newEmployeeDetails.getFirstName());
             user.setLastName(newEmployeeDetails.getLastName());
             user.setMail(newEmployeeDetails.getMail());
-            user.setPassword(newEmployeeDetails.getPassword());
+            user.setPassword(encode);
             return employeeRepository.save(user);
         });
     }

@@ -133,7 +133,7 @@
 
 
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<version>8.0.0.Final</version>
 		</dependency>
@@ -154,18 +154,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>com.vaadin</groupId>
-				<artifactId>vaadin-maven-plugin</artifactId>
-				<version>24.1.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>prepare-frontend</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+
 		</plugins>
 	</build>
 	<profiles>
@@ -189,7 +178,14 @@
 						<groupId>com.vaadin</groupId>
 						<artifactId>vaadin-maven-plugin</artifactId>
 						<version>${vaadin.version}</version>
-
+						<executions>
+							<execution>
+								<goals>
+									<goal>build-frontend</goal>
+								</goals>
+								<phase>compile</phase>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
 			</build>

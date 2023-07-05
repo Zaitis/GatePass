@@ -1,8 +1,7 @@
 package com.sk.GatePass.view.admin;
 
-import com.sk.GatePass.security.SecurityService;
 
-
+import com.sk.GatePass.security.SecurityConfig;
 import com.sk.GatePass.view.car.ManageCarView;
 import com.sk.GatePass.view.admin.company.ManageCompanyView;
 import com.sk.GatePass.view.admin.gatePass.ManageGatePassView;
@@ -19,10 +18,10 @@ import com.vaadin.flow.router.RouterLink;
 
 public class AdminLayout extends AppLayout {
 
-    private SecurityService securityService;
 
-    public AdminLayout(SecurityService securityService){
-        this.securityService = securityService;
+
+    public AdminLayout(){
+
         createHeader();
         createDrawer();
     }
@@ -48,9 +47,9 @@ public class AdminLayout extends AppLayout {
     private void createHeader() {
         H1 logo = new H1("Parking Manager");
         logo.addClassNames("text-l", "m-m");
-        Button logout = new Button("Log out", e -> securityService.logout());
+       // Button logout = new Button("Log out", e -> securityService.logout());
 
-        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, logout );
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo );
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.expand(logo);
         header.setWidthFull();
