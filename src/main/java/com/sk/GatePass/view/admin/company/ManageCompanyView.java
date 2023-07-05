@@ -1,10 +1,10 @@
-package com.sk.GatePass.view.company;
+package com.sk.GatePass.view.admin.company;
 
 
 
 import com.sk.GatePass.model.Company;
 import com.sk.GatePass.service.CompanyService;
-import com.sk.GatePass.view.MainLayout;
+import com.sk.GatePass.view.admin.AdminLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -16,11 +16,11 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 @PageTitle("Manage Companies")
-@PermitAll
-@Route(value = "manage-companies", layout = MainLayout.class)
+@RolesAllowed("ADMIN")
+@Route(value = "manage-companies", layout = AdminLayout.class)
 public class ManageCompanyView extends VerticalLayout {
 
     Grid<Company> grid = new Grid<>(Company.class);

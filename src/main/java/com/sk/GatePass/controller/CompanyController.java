@@ -2,6 +2,7 @@ package com.sk.GatePass.controller;
 
 import com.sk.GatePass.model.Company;
 import com.sk.GatePass.service.CompanyService;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.persistence.Transient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ public class CompanyController {
         Company company = companyService.getCompany(id);
         return new ResponseEntity<>(company, HttpStatus.OK);
     }
+
     @PostMapping("/companies")
     public ResponseEntity<Company> addCompany(@RequestBody Company company){
         Company newCompany = companyService.addCompany(company);

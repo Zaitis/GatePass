@@ -1,9 +1,6 @@
-package com.sk.GatePass.view;
+package com.sk.GatePass.view.user;
 
 import com.sk.GatePass.security.SecurityService;
-import com.sk.GatePass.view.car.ManageCarView;
-import com.sk.GatePass.view.company.ManageCompanyView;
-//import com.sk.GatePass.view.gatePass.GatePassForm;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -11,29 +8,32 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 
-public class MainLayout extends AppLayout {
+public class UserLayout extends AppLayout {
 
     private SecurityService securityService;
 
-    public MainLayout(SecurityService securityService){
+    public UserLayout(SecurityService securityService){
         this.securityService = securityService;
         createHeader();
         createDrawer();
     }
 
     private void createDrawer() {
-        RouterLink companyView = new RouterLink("company", ManageCompanyView.class);
-        RouterLink carView = new RouterLink("car", ManageCarView.class);
-      //  RouterLink gatePassView = new RouterLink("gate pass", GatePassForm.class);
-        companyView.setHighlightCondition(HighlightConditions.sameLocation());
+        RouterLink addCar = new RouterLink("add car", AddCarView.class);
+        RouterLink createGatePass = new RouterLink("create gate pass", CreateGatePassView.class);
+        RouterLink dashboard = new RouterLink("dashboard", DashboardView.class);
+        RouterLink updatePersonalData = new RouterLink("update personal data", UpdatePersonalDataView.class);
+
+
 
         addToDrawer(new VerticalLayout(
-                companyView,
-                carView
-     //           gatePassView
+                addCar,
+                createGatePass,
+                dashboard,
+                updatePersonalData
+
         ));
 
     }

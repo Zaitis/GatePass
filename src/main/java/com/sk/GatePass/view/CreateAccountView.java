@@ -23,13 +23,12 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-
-
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 
 @PageTitle("Create Account")
 @Route(value = "create-account")
-@Uses(Icon.class)
+@AnonymousAllowed
 public class CreateAccountView extends Div {
 
     private TextField firstName = new TextField("First name");

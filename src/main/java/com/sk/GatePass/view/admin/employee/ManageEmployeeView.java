@@ -1,8 +1,9 @@
-package com.sk.GatePass.view.car;
+package com.sk.GatePass.view.admin.employee;
 
 
-import com.sk.GatePass.model.Car;
-import com.sk.GatePass.service.CarService;
+import com.sk.GatePass.model.Employee;
+import com.sk.GatePass.service.CompanyService;
+import com.sk.GatePass.service.EmployeeService;
 import com.sk.GatePass.view.admin.AdminLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -15,23 +16,25 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
-@PageTitle("Manage Cars")
+@PageTitle("Manage Employee")
 @AnonymousAllowed
 //@RolesAllowed("ADMIN")
-@Route(value = "manage-cars", layout = AdminLayout.class)
-public class ManageCarView extends VerticalLayout {
+@Route(value = "manage-employees", layout = AdminLayout.class)
+public class ManageEmployeeView extends VerticalLayout {
 
-    Grid<Car> grid = new Grid<>(Car.class);
+    Grid<Employee> grid = new Grid<>(Employee.class);
     TextField filterText= new TextField();
-    CarForm form;
-    private CarService carService;
+    EmployeeForm form;
+    private EmployeeService employeeService;
+    private CompanyService companyService;
 
 
-    public ManageCarView(CarService carService){
-        this.carService = carService;
+    public ManageEmployeeView(EmployeeService employeeService, CompanyService companyService ){
+        this.employeeService = employeeService;
+        this.companyService = companyService;
 
 
-        addClassName("car-view");
+        addClassName("employee-view");
     setSizeFull();
 
     configureGrid();
@@ -47,13 +50,13 @@ public class ManageCarView extends VerticalLayout {
     }
 
     private void closeEditor() {
-        form.setCompany(null);
+        form.setEmployee(null);
         form.setVisible(false);
         removeClassName("editing");
     }
 
     private void updateCars() {
-        grid.setItems(carService.filterCar(filterText.getValue()));
+        grid.setItems(employeeService.filterEmployee(filterText.getValue()));
     }
 
     private Component getContent() {
@@ -67,7 +70,7 @@ public class ManageCarView extends VerticalLayout {
     }
 
     private void configureForm() {
-        form = new CarForm();
+        form = new EmployeeForm();
         form.setWidth("25em");
 
         form.addSaveListener(this::saveCompany);
@@ -76,14 +79,16 @@ public class ManageCarView extends VerticalLayout {
 
     }
 
-    private void deleteCompany(CarForm.DeleteEvent event) {
-        carService.deleteCarById(event.getCar().getId());
+    private void deleteCompany(EmployeeForm.DeleteEvent event) {
+        employeeService.deleteEmployeeById(event.getEmployee().getId());
         updateCars();
         closeEditor();
     }
 
-    private void saveCompany(CarForm.SaveEvent event){
-        carService.addCar(event.getCar());
+    private void saveCompany(EmployeeForm.SaveEvent event){
+        Employee employee = event.getEmployee();
+        employee.setCompany(companyService.getCompany(1L));
+        employeeService.addEmployee(event.getEmployee());
         updateCars();
         closeEditor();
     }
@@ -93,32 +98,34 @@ public class ManageCarView extends VerticalLayout {
         filterText.setClearButtonVisible(true);
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
         filterText.addValueChangeListener(e -> updateCars());
-        Button addCarButton = new Button("Add car");
-        addCarButton.addClickListener(e -> addCar());
-        HorizontalLayout toolbar = new HorizontalLayout(filterText, addCarButton);
+        Button addEmployeeButton = new Button("Add employee");
+        addEmployeeButton.addClickListener(e -> addEmployee());
+        HorizontalLayout toolbar = new HorizontalLayout(filterText, addEmployeeButton);
         return toolbar;
     }
 
-    private void addCar() {
+    private void addEmployee() {
         grid.asSingleSelect().clear();
-        editContact(new Car());
+        editEmployee(new Employee());
     }
 
     private void configureGrid() {
-        grid.addClassName("company-grid");
-        grid.setSizeFull();
-        grid.setColumns("id","brand", "model", "plate");
-   //     grid.addColumn(company -> company.getEmployees().size()).setHeader("CompanySize");
-    //    grid.getColumns().forEach(col->col.setAutoWidth(true));
 
-        grid.asSingleSelect().addValueChangeListener(e -> editContact(e.getValue()));
+
+        grid.addClassName("employee-grid");
+        grid.setSizeFull();
+        grid.setColumns("id","firstName","lastName", "phone", "mail", "role");
+        grid.addColumn(employee -> employee.getCompany().getCompanyName()).setHeader("Company Name");
+        grid.getColumns().forEach(col->col.setAutoWidth(true));
+
+        grid.asSingleSelect().addValueChangeListener(e -> editEmployee(e.getValue()));
     }
 
-    private void editContact(Car car) {
-        if(car == null){
+    private void editEmployee(Employee employee) {
+        if(employee == null){
             closeEditor();
         } else {
-            form.setCompany(car);
+            form.setEmployee(employee);
             form.setVisible(true);
             addClassName("editing");
         }

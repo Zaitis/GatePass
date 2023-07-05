@@ -1,5 +1,6 @@
 package com.sk.GatePass.service;
 
+import com.sk.GatePass.model.Company;
 import com.sk.GatePass.model.Employee;
 import com.sk.GatePass.repository.EmployeeRepository;
 
@@ -43,6 +44,14 @@ public class EmployeeService {
             employeeRepository.deleteById(id);
         } else {
             throw new RuntimeException("User not found");
+        }
+    }
+
+    public List<Employee> filterEmployee(String filterText){
+        if(filterText == null || filterText.isEmpty()) {
+            return employeeRepository.findAll();
+        } else {
+            return employeeRepository.findAll();
         }
     }
 }
