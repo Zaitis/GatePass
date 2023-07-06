@@ -33,14 +33,16 @@ public class EmployeeService {
     }
 
     public Optional<Employee> updateEmployeeById(Long id, Employee newEmployeeDetails) {
-        String encode = passwordEncoder.encode(newEmployeeDetails.getPassword());
-        return employeeRepository.findById(id).map(user -> {
-            user.setFirstName(newEmployeeDetails.getFirstName());
-            user.setLastName(newEmployeeDetails.getLastName());
-            user.setMail(newEmployeeDetails.getMail());
-            user.setPassword(encode);
-            return employeeRepository.save(user);
-        });
+
+            return employeeRepository.findById(id).map(user -> {
+                user.setFirstName(newEmployeeDetails.getFirstName());
+                user.setLastName(newEmployeeDetails.getLastName());
+                user.setMail(newEmployeeDetails.getMail());
+                user.setPassword(newEmployeeDetails.getPassword());
+                user.setCompany(newEmployeeDetails.getCompany());
+                return employeeRepository.save(user);
+            });
+
     }
 
     public void deleteEmployeeById(Long id) {

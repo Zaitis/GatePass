@@ -1,9 +1,7 @@
-package com.sk.GatePass.view;
+package com.sk.GatePass.view.commons;
 
 
 
-import com.sk.GatePass.view.admin.gatePass.ManageGatePassView;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import com.vaadin.flow.router.Route;

@@ -2,7 +2,7 @@ package com.sk.GatePass.security;
 
 
 import com.sk.GatePass.model.Role;
-import com.sk.GatePass.view.LoginView;
+import com.sk.GatePass.view.commons.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

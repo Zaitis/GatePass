@@ -2,6 +2,7 @@ package com.sk.GatePass.view.admin.employee;
 
 
 import com.sk.GatePass.model.Employee;
+import com.sk.GatePass.model.Role;
 import com.sk.GatePass.service.CompanyService;
 import com.sk.GatePass.service.EmployeeService;
 import com.sk.GatePass.view.admin.AdminLayout;
@@ -85,9 +86,17 @@ public class ManageEmployeeView extends VerticalLayout {
     }
 
     private void saveCompany(EmployeeForm.SaveEvent event){
-        employeeService.updateEmployeeById(event.getEmployee().getId(),event.getEmployee());
-        updateCars();
-        closeEditor();
+        Employee employee = event.getEmployee();
+        if (employee.getId()== null){
+            employee.setPassword("password");
+            employee.setRole(Role.USER);
+            employeeService.addEmployee(employee);
+        } else {
+            employeeService.updateEmployeeById(employee.getId(), employee);
+        }
+            updateCars();
+            closeEditor();
+
     }
 
     private Component getToolBar() {

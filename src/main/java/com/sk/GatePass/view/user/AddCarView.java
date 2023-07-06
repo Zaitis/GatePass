@@ -7,6 +7,7 @@ import com.sk.GatePass.repository.EmployeeRepository;
 import com.sk.GatePass.service.CarService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H1;
@@ -83,5 +84,6 @@ public class AddCarView extends VerticalLayout {
 
         carService.addCar(car);
         Notification.show("Car added to database.");
+        UI.getCurrent().navigate("/dashboard");
     }
 }

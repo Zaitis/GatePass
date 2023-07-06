@@ -45,7 +45,7 @@ public class UpdatePersonalDataView extends VerticalLayout {
         this.repository = repository;
 
 
-        H1 title = new H1("Not implemnted yet.");
+        H1 title = new H1("Update your personal data");
         add(title, createFormLayout());
 
 

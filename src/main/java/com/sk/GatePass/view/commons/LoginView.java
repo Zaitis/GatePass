@@ -1,4 +1,4 @@
-package com.sk.GatePass.view;
+package com.sk.GatePass.view.commons;
 
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.login.LoginForm;

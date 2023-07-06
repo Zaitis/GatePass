@@ -89,7 +89,7 @@ public class ManageGatePassView extends VerticalLayout {
     }
 
     private void saveCompany(GatePassForm.SaveEvent event){
-        gatePassService.addGatePass(event.getGatePass());
+        gatePassService.updateGatePass(event.getGatePass().getId(), event.getGatePass());
         updateCompanies();
         closeEditor();
     }
@@ -116,6 +116,7 @@ public class ManageGatePassView extends VerticalLayout {
             LocalDateTime acceptedDate = gatePass.getAcceptedDate();
             return acceptedDate != null ? dateTimeConverter.convertToModel(acceptedDate, null) : "-";
         }).setHeader("Accepted Date");
+        grid.addColumn(GatePass::isAccepted).setHeader("Accepted");
 
         grid.asSingleSelect().addValueChangeListener(e -> editContact(e.getValue()));
     }

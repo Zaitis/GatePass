@@ -5,8 +5,10 @@ import com.sk.GatePass.dto.GatePassDto;
 import com.sk.GatePass.model.Car;
 import com.sk.GatePass.model.Company;
 import com.sk.GatePass.model.Employee;
+import com.sk.GatePass.model.GatePass;
 import com.sk.GatePass.repository.CarRepository;
 import com.sk.GatePass.repository.EmployeeRepository;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H1;
@@ -15,9 +17,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @PageTitle("Gate Pass")
@@ -40,6 +44,18 @@ public class CreateGatePassView extends VerticalLayout {
         Employee employee = employeeRepository.findByMail(string);
         Long id = employee.getId();
         List<Car> employeeCars =carRepository.findCarsByEmployeeId(id);
+        List<GatePass> allGatePass = controller.getAllGatePass().getBody();
+        List<Car> carsWithGatePass = new ArrayList<>();
+        for (GatePass gatePass : allGatePass) {
+            for (Car car : employeeCars) {
+
+                if (gatePass.getCars().getId().equals(car.getId())) {
+                    carsWithGatePass.add(car);
+                    break;
+                }
+            }
+        }
+            employeeCars.removeAll(carsWithGatePass);
         cars.setItems(employeeCars);
         cars.setItemLabelGenerator(Car::getPlate);
 
@@ -53,6 +69,8 @@ public class CreateGatePassView extends VerticalLayout {
     }
 
     private void ask() {
+
         controller.addGatePass(new GatePassDto(cars.getValue().getId()));
+        UI.getCurrent().navigate("/dashboard");
     }
 }

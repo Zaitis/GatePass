@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.shared.Registration;
 
@@ -58,8 +59,8 @@ public class GatePassForm extends FormLayout {
         reject.addThemeVariants(ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
-//        accept.addClickListener(event ->validateAndSave());
-     //   reject.addClickListener(event ->fireEvent(new DeleteEvent(this, company)));
+        accept.addClickListener(event ->validateAndSave());
+        reject.addClickListener(event ->rejectAndSave());
         cancel.addClickListener(event -> fireEvent(new CloseEvent(this)));
         accept.addClickShortcut(Key.ENTER);
         cancel.addClickShortcut(Key.ESCAPE);
@@ -67,14 +68,28 @@ public class GatePassForm extends FormLayout {
         return new HorizontalLayout(accept, reject, cancel);
     }
 
+    private void rejectAndSave() {
+        try {
+
+            binder.writeBean(gatePass);
+            gatePass.setAccepted(false);
+            gatePass.setAcceptedDate(null);
+            fireEvent(new SaveEvent(this, gatePass));
+        } catch (ValidationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void validateAndSave() {
-//        try {
-//
-//            binder.writeBean(company);
-//            fireEvent(new SaveEvent(this, company));
-//        } catch (ValidationException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+
+            binder.writeBean(gatePass);
+            gatePass.setAccepted(true);
+            gatePass.setAcceptedDate(LocalDateTime.now());
+            fireEvent(new SaveEvent(this, gatePass));
+        } catch (ValidationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Events
