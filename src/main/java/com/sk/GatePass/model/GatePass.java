@@ -34,7 +34,7 @@ public class GatePass {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.DETACH)
+    @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "car_id", unique = true, referencedColumnName = "id")
     private Car cars;
 
@@ -46,6 +46,8 @@ public class GatePass {
 
     @Column(name = "accepted_date")
     private LocalDateTime acceptedDate;
+
+
 
 
 

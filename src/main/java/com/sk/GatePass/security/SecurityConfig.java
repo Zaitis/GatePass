@@ -47,7 +47,8 @@ public class SecurityConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
-                .requestMatchers("/images/*.png").permitAll();
+                .requestMatchers("/images/*.png").permitAll()
+                .requestMatchers("/favicon.ico").permitAll();
 
         super.configure(http);
         setLoginView(http, LoginView.class);
@@ -59,9 +60,9 @@ public class SecurityConfig extends VaadinWebSecurity {
 
                     if (authentication.getAuthorities().stream()
                             .anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"))) {
-                        response.sendRedirect("/admin-dashboard");
+                        response.sendRedirect("/parking/admin-dashboard");
                     } else {
-                        response.sendRedirect("/dashboard");
+                        response.sendRedirect("/parking/dashboard");
                     }
                 });
     }

@@ -46,4 +46,7 @@ public class Car {
     @JsonBackReference
     private Employee employee;
 
+    @OneToOne(mappedBy = "cars", cascade = CascadeType.REMOVE)
+    private GatePass gatePass;
+
 }

@@ -101,10 +101,7 @@ public class ManageCarView extends VerticalLayout {
     private void configureGrid() {
         grid.addClassName("company-grid");
         grid.setSizeFull();
-        grid.setColumns("id","brand", "model", "plate");
-   //     grid.addColumn(company -> company.getEmployees().size()).setHeader("CompanySize");
-    //    grid.getColumns().forEach(col->col.setAutoWidth(true));
-
+        grid.setColumns("id", "brand", "model", "plate");
         grid.asSingleSelect().addValueChangeListener(e -> editContact(e.getValue()));
     }
 

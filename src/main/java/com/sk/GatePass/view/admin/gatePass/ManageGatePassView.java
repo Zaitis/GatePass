@@ -107,6 +107,7 @@ public class ManageGatePassView extends VerticalLayout {
 
         grid.setSizeFull();
         grid.setColumns("id");
+        grid.addColumn(gatePass -> gatePass.getCars().getId()).setHeader("Car Id");
         grid.addColumn(gatePass -> gatePass.getCars().getBrand()).setHeader("Brand");
         grid.addColumn(gatePass -> gatePass.getCars().getModel()).setHeader("Model");
         grid.addColumn(gatePass -> gatePass.getCars().getPlate()).setHeader("Plate");

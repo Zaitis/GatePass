@@ -65,7 +65,7 @@ public class CreateAccountView extends VerticalLayout {
             employeeController.addEmployee(getBuild());
 
             Notification.show(binder.getBean().getClass().getSimpleName() + " details stored.");
-            clearForm();
+            UI.getCurrent().navigate("/parking");
         });
     }
 
