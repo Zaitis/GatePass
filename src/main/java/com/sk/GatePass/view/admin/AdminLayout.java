@@ -29,11 +29,11 @@ public class AdminLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        RouterLink adminDashboard = new RouterLink("dashboard", AdminDashboardView.class);
-        RouterLink employee = new RouterLink("employee", ManageEmployeeView.class);
-        RouterLink company = new RouterLink("company", ManageCompanyView.class);
-        RouterLink car = new RouterLink("car", ManageCarView.class);
-        RouterLink gatePassView = new RouterLink("gate pass", ManageGatePassView.class);
+        RouterLink adminDashboard = new RouterLink("Dashboard", AdminDashboardView.class);
+        RouterLink employee = new RouterLink("Users", ManageEmployeeView.class);
+        RouterLink company = new RouterLink("Companies", ManageCompanyView.class);
+        RouterLink car = new RouterLink("Cars", ManageCarView.class);
+        RouterLink gatePassView = new RouterLink("Gate Passes", ManageGatePassView.class);
         company.setHighlightCondition(HighlightConditions.sameLocation());
 
         addToDrawer(new VerticalLayout(
