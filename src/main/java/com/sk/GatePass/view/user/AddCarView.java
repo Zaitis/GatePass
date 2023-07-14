@@ -5,6 +5,7 @@ import com.sk.GatePass.model.Car;
 import com.sk.GatePass.model.Employee;
 import com.sk.GatePass.repository.EmployeeRepository;
 import com.sk.GatePass.service.CarService;
+import com.sk.GatePass.service.EmployeeService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
@@ -18,8 +19,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -33,31 +32,23 @@ public class AddCarView extends VerticalLayout {
     TextField plate = new TextField("Car Plate");
 
     Button save = new Button("Save");
-  //  Button cancel = new Button("Cancel");
-    private Car car;
+    Button cancel = new Button("Cancel");
 
 
-    private EmployeeRepository employeeRepository;
+
+    private EmployeeService employeeService;
     private CarService carService;
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    public AddCarView(EmployeeRepository employeeRepository, CarService carService){
-
+    public AddCarView(EmployeeService employeeService, CarService carService){
+        this.carService = carService;
+        this.employeeService = employeeService;
         H1 title = new H1("Add your car to database");
         add(title);
         add(
                 brand,
                 model,
                 plate,
-
                 createButtonLayout()
         );
-        this.carService = carService;
-
-        this.employeeRepository = employeeRepository;
-
-
     }
 
     private Component createButtonLayout() {
@@ -65,13 +56,13 @@ public class AddCarView extends VerticalLayout {
 
         save.addClickListener(event ->saveCar());
         save.addClickShortcut(Key.ENTER);
+        cancel.addClickListener(event -> UI.getCurrent().navigate(DashboardView.class));
+        cancel.addClickShortcut(Key.ESCAPE);
 
-
-        return new HorizontalLayout(save );
+        return new HorizontalLayout(save, cancel );
     }
 
     private void saveCar() {
-
         Car car = new Car();
         car.setBrand(brand.getValue());
         car.setModel(model.getValue());
@@ -79,7 +70,7 @@ public class AddCarView extends VerticalLayout {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Employee employee = employeeRepository.findByMail(username);
+        Employee employee = employeeService.getEmployeeByMail(username);
         car.setEmployee(employee);
 
         carService.addCar(car);

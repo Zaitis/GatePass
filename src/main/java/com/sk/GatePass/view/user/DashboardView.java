@@ -59,6 +59,7 @@ public class DashboardView extends VerticalLayout {
         grid.addColumn(Car::getModel).setHeader("Model");
         grid.addColumn(Car::getPlate).setHeader("Plate");
 
+
         return new VerticalLayout(carTitle, grid);
     }
 

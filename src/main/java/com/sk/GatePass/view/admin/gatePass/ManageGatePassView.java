@@ -24,11 +24,10 @@ import java.time.LocalDateTime;
 
 @PageTitle("Manage Gate Pass")
 @AnonymousAllowed
-@Route(value = "manage-gatepass", layout = AdminLayout.class)
+@Route(value = "manage-gate-pass", layout = AdminLayout.class)
 public class ManageGatePassView extends VerticalLayout {
 
     Grid<GatePass> grid = new Grid<>(GatePass.class);
- //   TextField filterText= new TextField();
     GatePassForm form;
     private GatePassService gatePassService;
     private final Converter<LocalDateTime, String> dateTimeConverter = new LocalDateTimeToStringConverter();
@@ -48,7 +47,7 @@ public class ManageGatePassView extends VerticalLayout {
             getContent()
         );
 
-      updateCompanies();
+      updateGatePasses();
       closeEditor();
     }
 
@@ -58,8 +57,8 @@ public class ManageGatePassView extends VerticalLayout {
         removeClassName("editing");
     }
 
-    private void updateCompanies() {
-        grid.setItems(gatePassService.filterGatePass(""));
+    private void updateGatePasses() {
+        grid.setItems(gatePassService.getGatePasses());
     }
 
     private Component getContent() {
@@ -68,46 +67,34 @@ public class ManageGatePassView extends VerticalLayout {
         content.setFlexGrow(1, form);
         content.addClassName("gate-pass");
         content.setSizeFull();
-
         return content;
     }
 
     private void configureForm() {
         form = new GatePassForm();
         form.setWidth("25em");
-
         form.addSaveListener(this::saveCompany);
         form.addDeleteListener(this::deleteCompany);
         form.addCloseListener(e -> closeEditor());
-
     }
 
     private void deleteCompany(GatePassForm.DeleteEvent event) {
         gatePassService.deleteGatePass(event.getGatePass().getId());
-        updateCompanies();
+        updateGatePasses();
         closeEditor();
     }
 
     private void saveCompany(GatePassForm.SaveEvent event){
         gatePassService.updateGatePass(event.getGatePass().getId(), event.getGatePass());
-        updateCompanies();
+        updateGatePasses();
         closeEditor();
     }
-
-
-
-    private void addCompany() {
-        grid.asSingleSelect().clear();
-        editContact(new GatePass());
-    }
-
 
     private void configureGrid() {
         grid.addClassName("gate-pass-grid");
 
         grid.setSizeFull();
         grid.setColumns("id");
-        grid.addColumn(gatePass -> gatePass.getCars().getId()).setHeader("Car Id");
         grid.addColumn(gatePass -> gatePass.getCars().getBrand()).setHeader("Brand");
         grid.addColumn(gatePass -> gatePass.getCars().getModel()).setHeader("Model");
         grid.addColumn(gatePass -> gatePass.getCars().getPlate()).setHeader("Plate");

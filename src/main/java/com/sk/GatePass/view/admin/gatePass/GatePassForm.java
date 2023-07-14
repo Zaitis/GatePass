@@ -23,14 +23,6 @@ import java.time.LocalDateTime;
 public class GatePassForm extends FormLayout {
 
     Binder<GatePass> binder = new BeanValidationBinder<>(GatePass.class);
-    TextField carBrand = new TextField("Brand");
-    TextField carModel = new TextField("Model");
-    TextField carPlate = new TextField("Plate Number");
-    TextField createdDate = new TextField("Request Date");
-    TextField acceptedDate = new TextField("Accepted Date");
-    TextField isAccepted = new TextField("Accepted");
-
-
     Button accept = new Button("Accept");
     Button reject = new Button("Reject");
     Button cancel = new Button("Cancel");

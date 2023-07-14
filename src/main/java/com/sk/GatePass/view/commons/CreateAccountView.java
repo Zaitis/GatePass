@@ -7,6 +7,7 @@ import com.sk.GatePass.model.Company;
 import com.sk.GatePass.model.Employee;
 import com.sk.GatePass.model.Role;
 import com.sk.GatePass.service.CompanyService;
+import com.sk.GatePass.service.EmployeeService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -43,12 +44,12 @@ public class CreateAccountView extends VerticalLayout {
     private Button create = new Button("Create");
 
     private Binder<Employee> binder = new Binder<>(Employee.class);
-    private EmployeeController employeeController;
+    private EmployeeService employeeService;
     private CompanyService companyService;
 
 
-    public CreateAccountView(EmployeeController employeeController, CompanyService companyService) {
-        this.employeeController = employeeController;
+    public CreateAccountView(EmployeeService employeeService, CompanyService companyService) {
+        this.employeeService = employeeService;
         this.companyService = companyService;
         addClassName("create-account-view");
 
@@ -62,21 +63,22 @@ public class CreateAccountView extends VerticalLayout {
         cancel.addClickListener(e -> UI.getCurrent().navigate(MainView.class));
         clear.addClickListener(e -> clearForm());
         create.addClickListener(e -> {
-            employeeController.addEmployee(getBuild());
+            employeeService.addEmployee(getBuild());
+
 
             Notification.show(binder.getBean().getClass().getSimpleName() + " details stored.");
             UI.getCurrent().navigate("/parking");
         });
     }
 
-    private EmployeeDto getBuild() {
-        return EmployeeDto.builder()
+    private Employee getBuild() {
+        return Employee.builder()
                 .firstName(binder.getBean().getFirstName())
                 .lastName(binder.getBean().getLastName())
                 .mail(binder.getBean().getMail())
                 .password(binder.getBean().getPassword())
                 .phone(binder.getBean().getPhone())
-                .company(binder.getBean().getCompany().getId())
+                .company(binder.getBean().getCompany())
                 .role(binder.getBean().getRole() != null ? binder.getBean().getRole() : Role.USER)
                 .build();
     }

@@ -37,16 +37,9 @@ public class GatePassService {
     public GatePass addGatePass(GatePass gatePass){
         return gatePassRepository.save(gatePass);
     }
+
     public void deleteGatePass(Long id){
         gatePassRepository.deleteById(id);
-    }
-
-    public List<GatePass> filterGatePass(String filterText){
-        if(filterText == null || filterText.isEmpty()) {
-            return gatePassRepository.findAll();
-        } else {
-            return gatePassRepository.findAll();
-        }
     }
 
     public GatePass updateGatePass(Long id, GatePass gatePass){

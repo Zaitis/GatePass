@@ -50,7 +50,7 @@ public class CarService {
         if (filterText == null || filterText.isEmpty()) {
             return carRepository.findAll();
         } else {
-            return carRepository.findAll();
+            return carRepository.search(filterText);
         }
     }
 

@@ -47,7 +47,7 @@ public class CompanyService {
         if(filterText == null || filterText.isEmpty()) {
             return companyRepository.findAll();
         } else {
-            return companyRepository.findAll();
+            return companyRepository.search(filterText);
         }
     }
 }

@@ -57,7 +57,11 @@ public class EmployeeService {
         if(filterText == null || filterText.isEmpty()) {
             return employeeRepository.findAll();
         } else {
-            return employeeRepository.findAll();
+            return employeeRepository.search(filterText);
         }
+    }
+
+    public Employee getEmployeeByMail(String mail) {
+        return employeeRepository.findByMail(mail);
     }
 }
