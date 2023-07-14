@@ -19,7 +19,7 @@ import com.vaadin.flow.router.RouterLink;
 public class AdminLayout extends AppLayout {
 
 
-    private SecurityService securityService; 
+    private SecurityService securityService;
 
     public AdminLayout(SecurityService securityService){
         this.securityService = securityService;
