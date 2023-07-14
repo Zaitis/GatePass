@@ -23,6 +23,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DATABASE_USER: ${{ secrets.DATABASE_USER }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          SPRING_DATASOURCE_URL: ${{ secrets.DATABASE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DATABASE_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
 
 
       - name: Upload Artifact
