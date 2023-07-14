@@ -28,7 +28,7 @@ public class MainView extends VerticalLayout {
         
 
 
-        H1 title = new H1("Welcome at Parking Manager. REMEMBER DRINK WATER!");
+        H1 title = new H1("Welcome at Parking Manager.");
         H3 paragraphTitle = new H3("How it works?");
         Paragraph intro = new Paragraph("Welcome to the Parking Manager demo application. This is a brief introduction to how the application works. All technical matters are discussed in the README on GitHub. From this page, you can navigate to the login page or create a new user account. If you don't wish to create an account and want to test the application, you can use these login credentials: test@test.pl/test.");
 
