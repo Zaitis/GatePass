@@ -11,14 +11,16 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-
+import com.vaadin.flow.theme.Theme;
 
 
 @Route(value = "")
 @AnonymousAllowed
-public class MainView extends VerticalLayout {
+@Theme("main")
+public class MainView extends VerticalLayout implements AppShellConfigurator {
 
 
     public MainView() {
