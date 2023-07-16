@@ -54,4 +54,7 @@ public class CarService {
         }
     }
 
+    public List<Car> findCarsByEmployeeId(Long id) {
+        return carRepository.findCarsByEmployeeId(id);
+    }
 }
