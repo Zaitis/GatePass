@@ -9,11 +9,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 public class GatePassApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GatePassApplication.class, args);
+//		SpringApplication.run(GatePassApplication.class, args);
 
-//		SpringApplication application = new SpringApplication(GatePassApplication.class);
-//		application.setAdditionalProfiles("production");
-//		application.run(args);
+		SpringApplication application = new SpringApplication(GatePassApplication.class);
+		application.setAdditionalProfiles("production");
+		application.run(args);
 	}
 
 }

@@ -45,7 +45,7 @@ public class AdminLayout extends AppLayout {
         Button gatePassView = new Button("Gate");
         gatePassView.addClickListener(e -> UI.getCurrent().navigate(ManageGatePassView.class));
         gatePassView.setWidth("200px");
-        
+
 
         addToDrawer(new VerticalLayout(
                 adminDashboard,
