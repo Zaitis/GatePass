@@ -1,6 +1,5 @@
 package com.sk.GatePass;
 
-import com.vaadin.flow.server.PWA;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -10,11 +9,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 public class GatePassApplication {
 
 	public static void main(String[] args) {
-//		SpringApplication.run(GatePassApplication.class, args);
+		SpringApplication.run(GatePassApplication.class, args);
 
-		SpringApplication application = new SpringApplication(GatePassApplication.class);
-		application.setAdditionalProfiles("production");
-		application.run(args);
+//		SpringApplication application = new SpringApplication(GatePassApplication.class);
+//		application.setAdditionalProfiles("production");
+//		application.run(args);
 	}
 
 }

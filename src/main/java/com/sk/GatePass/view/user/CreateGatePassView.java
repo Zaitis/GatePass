@@ -41,7 +41,7 @@ public class CreateGatePassView extends VerticalLayout {
         this.carService= carService;
         this.employeeService = employeeService;
         this.gatePassService = gatePassService;
-        
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String string = authentication.getName();
         Employee employee = employeeService.getEmployeeByMail(string);

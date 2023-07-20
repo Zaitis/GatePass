@@ -6,6 +6,7 @@ import com.sk.GatePass.view.admin.car.ManageCarView;
 import com.sk.GatePass.view.admin.company.ManageCompanyView;
 import com.sk.GatePass.view.admin.gatePass.ManageGatePassView;
 import com.sk.GatePass.view.admin.employee.ManageEmployeeView;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -29,12 +30,22 @@ public class AdminLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        RouterLink adminDashboard = new RouterLink("Dashboard", AdminDashboardView.class);
-        RouterLink employee = new RouterLink("Users", ManageEmployeeView.class);
-        RouterLink company = new RouterLink("Companies", ManageCompanyView.class);
-        RouterLink car = new RouterLink("Cars", ManageCarView.class);
-        RouterLink gatePassView = new RouterLink("Gate Passes", ManageGatePassView.class);
-        company.setHighlightCondition(HighlightConditions.sameLocation());
+        Button adminDashboard = new Button("Dashboard");
+        adminDashboard.addClickListener(e -> UI.getCurrent().navigate(AdminDashboardView.class));
+        adminDashboard.setWidth("200px");
+        Button employee = new Button("Users");
+        employee.addClickListener(e -> UI.getCurrent().navigate(ManageEmployeeView.class));
+        employee.setWidth("200px");
+        Button company = new Button("Companies");
+        company.addClickListener(e -> UI.getCurrent().navigate(ManageCompanyView.class));
+        company.setWidth("200px");
+        Button car = new Button("Cars");
+        car.addClickListener(e -> UI.getCurrent().navigate(ManageCarView.class));
+        car.setWidth("200px");
+        Button gatePassView = new Button("Gate");
+        gatePassView.addClickListener(e -> UI.getCurrent().navigate(ManageGatePassView.class));
+        gatePassView.setWidth("200px");
+        
 
         addToDrawer(new VerticalLayout(
                 adminDashboard,

@@ -1,6 +1,8 @@
 package com.sk.GatePass.view.user;
 
 import com.sk.GatePass.security.SecurityService;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -8,7 +10,6 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.RouterLink;
 
 public class UserLayout extends AppLayout {
 
@@ -23,12 +24,18 @@ public class UserLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        RouterLink addCar = new RouterLink("Add Car", AddCarView.class);
-        RouterLink createGatePass = new RouterLink("create gate pass", CreateGatePassView.class);
-        RouterLink dashboard = new RouterLink("dashboard", DashboardView.class);
-        RouterLink updatePersonalData = new RouterLink("update personal data", UpdatePersonalDataView.class);
-
-
+        Button addCar = new Button("Add Car");
+        addCar.setWidth("200px");
+        addCar.addClickListener(e -> UI.getCurrent().navigate(AddCarView.class));
+        Button createGatePass = new Button("Make Gate Pass");
+        createGatePass.setWidth("200px");
+        createGatePass.addClickListener(e -> UI.getCurrent().navigate(CreateGatePassView.class));
+        Button dashboard = new Button("Dashboard");
+        dashboard.setWidth("200px");
+        dashboard.addClickListener(e -> UI.getCurrent().navigate(DashboardView.class));
+        Button updatePersonalData = new Button("Update Personal Data");
+        updatePersonalData.setWidth("200px");
+        updatePersonalData.addClickListener(e -> UI.getCurrent().navigate(UpdatePersonalDataView.class));
 
         addToDrawer(new VerticalLayout(
                 dashboard,
