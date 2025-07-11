@@ -23,7 +23,7 @@ Parking Manager can be used as a parking management application. Application its
 # Getting Started
 
 ## Prerequisites
-- Java 21 or later
+- Java 21 (required for compilation)
 - Maven 3.6 or later
 
 ## Running the Application
