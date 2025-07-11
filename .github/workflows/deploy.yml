@@ -211,11 +211,45 @@ jobs:
         }
         
         echo "Transferring JAR file: $JAR_FILE"
-        scp_retry "$JAR_FILE" "$REMOTE_USER@$REMOTE_HOST:/tmp/gatepass.jar"
+        echo "Local JAR file info:"
+        ls -la "$JAR_FILE"
         
-        # Verify the transfer was successful
-        echo "Verifying file transfer..."
-        sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/gatepass.jar"
+        # Transfer with more debugging - try home directory first, then move to /tmp
+        echo "Starting transfer to home directory first..."
+        scp_retry "$JAR_FILE" "$REMOTE_USER@$REMOTE_HOST:~/gatepass.jar"
+        
+        # Move to /tmp with proper permissions
+        echo "Moving JAR to /tmp directory..."
+        sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "
+          SUDOPASS='deploy123'
+          sudo_cmd() {
+            echo \"\$SUDOPASS\" | sudo -S \"\$@\"
+          }
+          
+          echo 'JAR file in home directory:'
+          ls -la ~/gatepass.jar
+          echo 'Moving to /tmp with proper permissions...'
+          sudo_cmd mv ~/gatepass.jar /tmp/gatepass.jar
+          sudo_cmd chown $REMOTE_USER:$REMOTE_USER /tmp/gatepass.jar
+          sudo_cmd chmod 644 /tmp/gatepass.jar
+          echo 'JAR file after move:'
+          ls -la /tmp/gatepass.jar
+        "
+        
+        # Immediately verify the transfer was successful
+        echo "Verifying file transfer immediately after scp..."
+        if sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/gatepass.jar 2>/dev/null"; then
+          echo "✅ JAR file found on server"
+          echo "File details:"
+          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/gatepass.jar; file /tmp/gatepass.jar; du -h /tmp/gatepass.jar"
+        else
+          echo "❌ JAR file NOT found on server immediately after transfer"
+          echo "Contents of /tmp directory:"
+          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/"
+          echo "Checking if file exists with different name:"
+          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "find /tmp -name '*gate*' -o -name '*.jar' 2>/dev/null"
+          exit 1
+        fi
 
     - name: Deploy JAR and configure service
       run: |
