@@ -88,27 +88,19 @@ jobs:
         # Create systemd service file
         echo "Creating systemd service..."
         sudo_cmd rm -f /etc/systemd/system/$SERVICE_NAME.service
-        echo "[Unit]" | sudo_cmd tee /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Description=GatePass Spring Boot Application" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "After=network.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "[Service]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Type=simple" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "User=$USER" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Group=$USER" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "WorkingDirectory=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Restart=always" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "RestartSec=10" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "StandardOutput=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "StandardError=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Environment=JAVA_HOME=$JAVA_HOME" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "[Install]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "WantedBy=multi-user.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+        
+        # Copy and customize service file from deployment directory
+        cp deployment/gatepass.service /tmp/gatepass.service
+        
+        # Update service file with correct environment variables
+        sed -i "s|Environment=DATABASE_URL=.*|Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}|" /tmp/gatepass.service
+        sed -i "s|Environment=DATABASE_USER=.*|Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}|" /tmp/gatepass.service
+        sed -i "s|Environment=DATABASE_PASSWORD=.*|Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}|" /tmp/gatepass.service
+        sed -i "s|Environment=JAVA_HOME=.*|Environment=JAVA_HOME=$JAVA_HOME|" /tmp/gatepass.service
+        
+        # Copy to systemd directory
+        sudo_cmd cp /tmp/gatepass.service /etc/systemd/system/$SERVICE_NAME.service
+        sudo_cmd chmod 644 /etc/systemd/system/$SERVICE_NAME.service
         
         # Reload systemd and start service
         echo "Starting service..."
