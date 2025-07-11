@@ -170,6 +170,24 @@ jobs:
         REMOTE_USER="${{ secrets.HETZNER_USER }}"
         REMOTE_PASS="${{ secrets.HETZNER_PASSWORD }}"
         
+        # Validate JAR file exists
+        if [ ! -f target/*.jar ]; then
+          echo "❌ Error: JAR file not found in target directory"
+          ls -la target/
+          exit 1
+        fi
+        
+        # Get the exact JAR file name
+        JAR_FILE=$(ls target/*.jar | head -1)
+        echo "Found JAR file: $JAR_FILE"
+        
+        # Validate JAR file is not empty
+        if [ ! -s "$JAR_FILE" ]; then
+          echo "❌ Error: JAR file is empty"
+          ls -la "$JAR_FILE"
+          exit 1
+        fi
+        
         # Function to copy files with retry
         scp_retry() {
           local max_attempts=3
@@ -178,7 +196,8 @@ jobs:
           
           while [ $attempt -le $max_attempts ]; do
             echo "Copy attempt $attempt of $max_attempts..."
-            if sshpass -p "$REMOTE_PASS" scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 "$@"; then
+            if sshpass -p "$REMOTE_PASS" scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 -v "$@"; then
+              echo "✅ File transfer successful"
               return 0
             else
               echo "Copy attempt $attempt failed. Retrying in $delay seconds..."
@@ -187,12 +206,20 @@ jobs:
             fi
           done
           
-          echo "All copy attempts failed!"
+          echo "❌ All copy attempts failed!"
           return 1
         }
         
-        echo "Transferring JAR file..."
-        scp_retry target/*.jar "$REMOTE_USER@$REMOTE_HOST:/tmp/gatepass.jar"
+        echo "Transferring JAR file: $JAR_FILE"
+        scp_retry "$JAR_FILE" "$REMOTE_USER@$REMOTE_HOST:/tmp/gatepass.jar"
+        
+        # Transfer service file template
+        echo "Transferring service file template..."
+        scp_retry "deployment/gatepass.service" "$REMOTE_USER@$REMOTE_HOST:/tmp/gatepass.service"
+        
+        # Verify the transfers were successful
+        echo "Verifying file transfers..."
+        sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/gatepass.jar /tmp/gatepass.service"
 
     - name: Deploy JAR and configure service
       run: |
@@ -232,10 +259,23 @@ jobs:
             echo "$SUDOPASS" | sudo -S "$@"
           }
           
+          # Verify JAR file exists
+          if [ ! -f /tmp/gatepass.jar ]; then
+            echo "❌ Error: JAR file not found in /tmp/"
+            ls -la /tmp/
+            exit 1
+          fi
+          
           # Move JAR to final location
           echo "Installing JAR file..."
           sudo_cmd mv /tmp/gatepass.jar /var/lib/gatepass/gatepass.jar
           sudo_cmd chmod 644 /var/lib/gatepass/gatepass.jar
+          
+          # Verify JAR was moved successfully
+          if [ ! -f /var/lib/gatepass/gatepass.jar ]; then
+            echo "❌ Error: JAR file was not moved successfully"
+            exit 1
+          fi
           
           # Detect Java installation
           echo "Detecting Java installation..."
@@ -251,39 +291,37 @@ jobs:
           echo "JAVA_HOME: $JAVA_HOME"
           
                                 # Create service file from template
-           echo "Creating systemd service..."
-           sudo_cmd rm -f /etc/systemd/system/$SERVICE_NAME.service
-           
-           # Create service file using echo statements
-           echo "[Unit]" | sudo_cmd tee /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Description=GatePass Spring Boot Application" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "After=network.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "[Service]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Type=simple" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "User=deploy" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Group=deploy" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "WorkingDirectory=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Restart=always" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "RestartSec=10" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "StandardOutput=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "StandardError=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Environment=JAVA_HOME=$JAVA_HOME" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "Environment=JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "NoNewPrivileges=true" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "PrivateTmp=true" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "ProtectSystem=strict" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "ReadWritePaths=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "ReadWritePaths=/var/log/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "[Install]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-           echo "WantedBy=multi-user.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Creating systemd service..."
+          sudo_cmd rm -f /etc/systemd/system/$SERVICE_NAME.service
+          
+          # Verify service template file exists
+          if [ ! -f /tmp/gatepass.service ]; then
+            echo "❌ Error: Service template file not found"
+            exit 1
+          fi
+          
+          # Copy template and update environment variables
+          cp /tmp/gatepass.service /tmp/gatepass_configured.service
+          
+          # Update environment variables
+          sed -i "s|Environment=JAVA_HOME=.*|Environment=JAVA_HOME=$JAVA_HOME|g" /tmp/gatepass_configured.service
+          sed -i "s|Environment=DATABASE_URL=.*|Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}|g" /tmp/gatepass_configured.service
+          sed -i "s|Environment=DATABASE_USER=.*|Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}|g" /tmp/gatepass_configured.service
+          sed -i "s|Environment=DATABASE_PASSWORD=.*|Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}|g" /tmp/gatepass_configured.service
+          
+          # Install the service file
+          sudo_cmd cp /tmp/gatepass_configured.service /etc/systemd/system/$SERVICE_NAME.service
+          sudo_cmd chmod 644 /etc/systemd/system/$SERVICE_NAME.service
+          
+          # Verify service file was created
+          if [ ! -f /etc/systemd/system/$SERVICE_NAME.service ]; then
+            echo "❌ Error: Service file was not created"
+            exit 1
+          fi
+          
+          # Show service file content for debugging
+          echo "Service file content:"
+          sudo_cmd cat /etc/systemd/system/$SERVICE_NAME.service
            
            # Enable and start service
           echo "Starting service..."
