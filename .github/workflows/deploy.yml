@@ -5,185 +5,355 @@ on:
     branches: [ main, master ]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-
+    
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Build with Maven
+      run: |
+        chmod +x ./mvnw
+        ./mvnw clean package -Pproduction -DskipTests --batch-mode --update-snapshots
+        
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gatepass-jar
+        path: target/*.jar
+        retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code (for deployment configs)
+      uses: actions/checkout@v4
+
+    - name: Download JAR artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: gatepass-jar
+        path: ./target
+
     - name: Install sshpass
       run: |
         sudo apt-get update
         sudo apt-get install -y sshpass
 
-    - name: Deploy GatePass on server
+    - name: Deploy to server
       run: |
-        sshpass -p "${{ secrets.HETZNER_PASSWORD }}" ssh -tt -o StrictHostKeyChecking=no ${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }} '
-        set -e
-        
-        # Add debugging
-        echo "=== Starting GatePass Deployment ==="
-        echo "Current user: $(whoami)"
-        echo "Current directory: $(pwd)"
-        echo "Date: $(date)"
-        
         # Configuration
-        DEPLOY_PATH="/var/www/parking"
-        BACKUP_DIR="/var/backups/parking"
-        DATE=$(date +%Y%m%d_%H%M%S)
-        REPO_URL="https://${{ secrets.GH_TOKEN }}@github.com/Zaitis/GatePass.git"
-        BRANCH="master"
-        SUDOPASS="deploy123"
+        REMOTE_HOST="${{ secrets.HETZNER_HOST }}"
+        REMOTE_USER="${{ secrets.HETZNER_USER }}"
+        REMOTE_PASS="${{ secrets.HETZNER_PASSWORD }}"
         SERVICE_NAME="gatepass"
+        DEPLOY_PATH="/var/www/parking"
         
-        sudo_cmd() {
-          echo "$SUDOPASS" | sudo -S "$@"
+        # Function to execute commands with retry
+        ssh_retry() {
+          local max_attempts=3
+          local delay=5
+          local attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 "$REMOTE_USER@$REMOTE_HOST" "$@"; then
+              return 0
+            else
+              echo "SSH attempt $attempt failed. Retrying in $delay seconds..."
+              sleep $delay
+              ((attempt++))
+            fi
+          done
+          
+          echo "All SSH attempts failed!"
+          return 1
         }
         
-        # Create directories
-        sudo_cmd mkdir -p "$BACKUP_DIR"
-        
-        # Handle repository
-        if [ -d "$DEPLOY_PATH/.git" ]; then
-            echo "Creating backup..."
-            sudo_cmd tar -czf "$BACKUP_DIR/backup_$DATE.tar.gz" -C "$DEPLOY_PATH" .
-            sudo_cmd chown -R $USER:$USER "$DEPLOY_PATH"
-            cd "$DEPLOY_PATH"
-            git fetch origin
-            git reset --hard origin/$BRANCH
-        else
-            sudo_cmd rm -rf "$DEPLOY_PATH"
-            sudo_cmd mkdir -p "$DEPLOY_PATH"
-            sudo_cmd chown -R $USER:$USER "$DEPLOY_PATH"
-            git clone -b "$BRANCH" "$REPO_URL" "$DEPLOY_PATH"
-        fi
-        
-        # Stop service if running (ignore if not exists)
-        echo "Stopping service if running..."
-        sudo_cmd systemctl stop $SERVICE_NAME 2>/dev/null || echo "Service was not running"
-        
-        # Build application
-        cd "$DEPLOY_PATH"
-        sudo_cmd chown -R $USER:$USER "$DEPLOY_PATH"
-        
-        # Fix Maven wrapper permissions
-        echo "Setting Maven wrapper permissions..."
-        chmod +x ./mvnw
-        
-        # Set Java environment (auto-detect Java installation)
-        echo "Detecting Java installation..."
-        
-        # Try multiple methods to detect Java
-        if [ -d "/usr/lib/jvm/java-21-openjdk-amd64" ]; then
-            export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
-        elif [ -d "/usr/lib/jvm/default-java" ]; then
-            export JAVA_HOME="/usr/lib/jvm/default-java"
-        elif command -v java >/dev/null 2>&1; then
-            # Try to auto-detect from java command
-            JAVA_PATH=$(which java)
-            if [ -L "$JAVA_PATH" ]; then
-                JAVA_REAL_PATH=$(readlink -f "$JAVA_PATH" 2>/dev/null || echo "$JAVA_PATH")
-                export JAVA_HOME=$(dirname $(dirname "$JAVA_REAL_PATH"))
+        # Function to copy files with retry
+        scp_retry() {
+          local max_attempts=3
+          local delay=5
+          local attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Copy attempt $attempt of $max_attempts..."
+            if sshpass -p "$REMOTE_PASS" scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 "$@"; then
+              return 0
             else
-                export JAVA_HOME=$(dirname $(dirname "$JAVA_PATH"))
+              echo "Copy attempt $attempt failed. Retrying in $delay seconds..."
+              sleep $delay
+              ((attempt++))
             fi
-        else
-            echo "Java not found! Please install Java 21"
-            exit 1
-        fi
+          done
+          
+          echo "All copy attempts failed!"
+          return 1
+        }
+
+    - name: Stop service and backup
+      run: |
+        REMOTE_HOST="${{ secrets.HETZNER_HOST }}"
+        REMOTE_USER="${{ secrets.HETZNER_USER }}"
+        REMOTE_PASS="${{ secrets.HETZNER_PASSWORD }}"
+        SERVICE_NAME="gatepass"
         
-        export PATH=$JAVA_HOME/bin:$PATH
-        
-        # Verify Java installation
-        echo "Java version:"
-        java -version || (echo "Java verification failed!" && exit 1)
-        echo "JAVA_HOME: $JAVA_HOME"
-        echo "Java executable: $(which java)"
-        
-        # Clean and build
-        echo "Building application..."
-        ./mvnw clean package -Pproduction -DskipTests
-        
-        # Setup application directories
-        sudo_cmd mkdir -p /var/log/gatepass /var/lib/gatepass
-        sudo_cmd chown -R $USER:$USER /var/log/gatepass /var/lib/gatepass
-        
-        # Copy JAR file
-        echo "Copying JAR file..."
-        sudo_cmd cp target/*.jar /var/lib/gatepass/gatepass.jar
-        
-        # Create systemd service file
-        echo "Creating systemd service..."
-        sudo_cmd rm -f /etc/systemd/system/$SERVICE_NAME.service
-        
-        # Copy and customize service file from deployment directory
-        cp deployment/gatepass.service /tmp/gatepass.service
-        
-        # Update service file with correct environment variables
-        sed -i "s|Environment=DATABASE_URL=.*|Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}|" /tmp/gatepass.service
-        sed -i "s|Environment=DATABASE_USER=.*|Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}|" /tmp/gatepass.service
-        sed -i "s|Environment=DATABASE_PASSWORD=.*|Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}|" /tmp/gatepass.service
-        sed -i "s|Environment=JAVA_HOME=.*|Environment=JAVA_HOME=$JAVA_HOME|" /tmp/gatepass.service
-        
-        # Copy to systemd directory
-        sudo_cmd cp /tmp/gatepass.service /etc/systemd/system/$SERVICE_NAME.service
-        sudo_cmd chmod 644 /etc/systemd/system/$SERVICE_NAME.service
-        
-        # Reload systemd and start service
-        echo "Starting service..."
-        sudo_cmd systemctl daemon-reload
-        sudo_cmd systemctl enable $SERVICE_NAME
-        sudo_cmd systemctl start $SERVICE_NAME
-        
-        # Wait for service to start
-        echo "Waiting for service to start..."
-        sleep 15
-        
-        # Check service status
-        echo "Checking service status..."
-        sudo_cmd systemctl status $SERVICE_NAME --no-pager -l || echo "Service status check failed"
-        
-        # Check if application is responding
-        echo "Checking application health..."
-        for i in {1..10}; do
-            if curl -s http://localhost:8081 > /dev/null; then
-                echo "Application is responding!"
-                break
+        # Function to execute commands with retry
+        ssh_retry() {
+          local max_attempts=3
+          local delay=5
+          local attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 "$REMOTE_USER@$REMOTE_HOST" "$@"; then
+              return 0
             else
-                echo "Waiting for application to start... ($i/10)"
-                sleep 5
+              echo "SSH attempt $attempt failed. Retrying in $delay seconds..."
+              sleep $delay
+              ((attempt++))
             fi
-        done
+          done
+          
+          echo "All SSH attempts failed!"
+          return 1
+        }
         
-        # Configure nginx
-        if [ ! -f /etc/nginx/sites-available/parking.zaitis.dev ]; then
-            echo "Configuring Nginx..."
-            sudo_cmd rm -f /etc/nginx/sites-available/parking.zaitis.dev
-            echo "server {" | sudo_cmd tee /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "    listen 80;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "    server_name parking.zaitis.dev;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "    client_max_body_size 50M;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "    client_body_timeout 300s;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "    client_header_timeout 300s;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "    location / {" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_pass http://localhost:8081;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_set_header Host \$host;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_set_header X-Real-IP \$remote_addr;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_set_header X-Forwarded-Proto \$scheme;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_connect_timeout 300s;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_send_timeout 300s;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_read_timeout 300s;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "    }" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "}" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            
-            sudo_cmd ln -sf /etc/nginx/sites-available/parking.zaitis.dev /etc/nginx/sites-enabled/
-            sudo_cmd nginx -t && sudo_cmd systemctl reload nginx
-        fi
+        ssh_retry '
+          set -e
+          echo "=== Stopping service and creating backup ==="
+          
+          SUDOPASS="deploy123"
+          SERVICE_NAME="gatepass"
+          DATE=$(date +%Y%m%d_%H%M%S)
+          
+          sudo_cmd() {
+            echo "$SUDOPASS" | sudo -S "$@"
+          }
+          
+          # Stop service
+          echo "Stopping service..."
+          sudo_cmd systemctl stop $SERVICE_NAME 2>/dev/null || echo "Service was not running"
+          
+          # Create backup
+          echo "Creating backup..."
+          sudo_cmd mkdir -p /var/backups/parking
+          if [ -f /var/lib/gatepass/gatepass.jar ]; then
+            sudo_cmd cp /var/lib/gatepass/gatepass.jar /var/backups/parking/gatepass-backup-$DATE.jar
+            echo "Backup created: gatepass-backup-$DATE.jar"
+          fi
+          
+          # Prepare directories
+          sudo_cmd mkdir -p /var/lib/gatepass /var/log/gatepass
+          sudo_cmd chown -R $USER:$USER /var/lib/gatepass /var/log/gatepass
+        '
+
+    - name: Transfer JAR file
+      run: |
+        REMOTE_HOST="${{ secrets.HETZNER_HOST }}"
+        REMOTE_USER="${{ secrets.HETZNER_USER }}"
+        REMOTE_PASS="${{ secrets.HETZNER_PASSWORD }}"
         
-        echo "✅ Deployment completed successfully!"
-        echo "🌐 Application should be available at: http://parking.zaitis.dev"
-        echo "📊 Service logs: sudo journalctl -u gatepass -f"
+        # Function to copy files with retry
+        scp_retry() {
+          local max_attempts=3
+          local delay=5
+          local attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Copy attempt $attempt of $max_attempts..."
+            if sshpass -p "$REMOTE_PASS" scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 "$@"; then
+              return 0
+            else
+              echo "Copy attempt $attempt failed. Retrying in $delay seconds..."
+              sleep $delay
+              ((attempt++))
+            fi
+          done
+          
+          echo "All copy attempts failed!"
+          return 1
+        }
+        
+        echo "Transferring JAR file..."
+        scp_retry target/*.jar "$REMOTE_USER@$REMOTE_HOST:/tmp/gatepass.jar"
+
+    - name: Deploy JAR and configure service
+      run: |
+        REMOTE_HOST="${{ secrets.HETZNER_HOST }}"
+        REMOTE_USER="${{ secrets.HETZNER_USER }}"
+        REMOTE_PASS="${{ secrets.HETZNER_PASSWORD }}"
+        
+        # Function to execute commands with retry
+        ssh_retry() {
+          local max_attempts=3
+          local delay=5
+          local attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 "$REMOTE_USER@$REMOTE_HOST" "$@"; then
+              return 0
+            else
+              echo "SSH attempt $attempt failed. Retrying in $delay seconds..."
+              sleep $delay
+              ((attempt++))
+            fi
+          done
+          
+          echo "All SSH attempts failed!"
+          return 1
+        }
+        
+        ssh_retry '
+          set -e
+          echo "=== Deploying JAR and configuring service ==="
+          
+          SUDOPASS="deploy123"
+          SERVICE_NAME="gatepass"
+          
+          sudo_cmd() {
+            echo "$SUDOPASS" | sudo -S "$@"
+          }
+          
+          # Move JAR to final location
+          echo "Installing JAR file..."
+          sudo_cmd mv /tmp/gatepass.jar /var/lib/gatepass/gatepass.jar
+          sudo_cmd chmod 644 /var/lib/gatepass/gatepass.jar
+          
+          # Detect Java installation
+          echo "Detecting Java installation..."
+          if [ -d "/usr/lib/jvm/java-21-openjdk-amd64" ]; then
+              JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+          elif [ -d "/usr/lib/jvm/default-java" ]; then
+              JAVA_HOME="/usr/lib/jvm/default-java"
+          else
+              echo "Java not found! Using default path"
+              JAVA_HOME="/usr/lib/jvm/default-java"
+          fi
+          
+          echo "JAVA_HOME: $JAVA_HOME"
+          
+                                # Create service file from template
+           echo "Creating systemd service..."
+           sudo_cmd rm -f /etc/systemd/system/$SERVICE_NAME.service
+           
+           # Create service file using echo statements
+           echo "[Unit]" | sudo_cmd tee /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Description=GatePass Spring Boot Application" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "After=network.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "[Service]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Type=simple" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "User=deploy" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Group=deploy" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "WorkingDirectory=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Restart=always" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "RestartSec=10" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "StandardOutput=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "StandardError=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Environment=JAVA_HOME=$JAVA_HOME" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "Environment=JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "NoNewPrivileges=true" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "PrivateTmp=true" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "ProtectSystem=strict" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "ReadWritePaths=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "ReadWritePaths=/var/log/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "[Install]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           echo "WantedBy=multi-user.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+           
+           # Enable and start service
+          echo "Starting service..."
+          sudo_cmd systemctl daemon-reload
+          sudo_cmd systemctl enable $SERVICE_NAME
+          sudo_cmd systemctl start $SERVICE_NAME
+          
+          echo "✅ Service configured and started!"
+        '
+
+    - name: Verify deployment
+      run: |
+        REMOTE_HOST="${{ secrets.HETZNER_HOST }}"
+        REMOTE_USER="${{ secrets.HETZNER_USER }}"
+        REMOTE_PASS="${{ secrets.HETZNER_PASSWORD }}"
+        
+        # Function to execute commands with retry
+        ssh_retry() {
+          local max_attempts=3
+          local delay=5
+          local attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            if sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 "$REMOTE_USER@$REMOTE_HOST" "$@"; then
+              return 0
+            else
+              echo "SSH attempt $attempt failed. Retrying in $delay seconds..."
+              sleep $delay
+              ((attempt++))
+            fi
+          done
+          
+          echo "All SSH attempts failed!"
+          return 1
+        }
+        
+        ssh_retry '
+          set -e
+          echo "=== Verifying deployment ==="
+          
+          SUDOPASS="deploy123"
+          SERVICE_NAME="gatepass"
+          
+          sudo_cmd() {
+            echo "$SUDOPASS" | sudo -S "$@"
+          }
+          
+          # Wait for service to start
+          echo "Waiting for service to start..."
+          sleep 20
+          
+          # Check service status
+          echo "Checking service status..."
+          sudo_cmd systemctl status $SERVICE_NAME --no-pager -l || echo "Service status check completed"
+          
+          # Check if application is responding
+          echo "Checking application health..."
+          for i in {1..10}; do
+              if curl -s http://localhost:8081 > /dev/null; then
+                  echo "✅ Application is responding!"
+                  exit 0
+              else
+                  echo "Waiting for application to start... ($i/10)"
+                  sleep 5
+              fi
+          done
+          
+          echo "⚠️  Application health check completed with warnings"
+          echo "📊 Check logs: sudo journalctl -u gatepass -f"
         '
 
     - name: Notify deployment status
@@ -194,4 +364,5 @@ jobs:
           echo "🌐 GatePass is available at: http://parking.zaitis.dev"
         else
           echo "❌ Deployment failed!"
+          echo "Check the logs above for details."
         fi 

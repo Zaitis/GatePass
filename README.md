@@ -42,6 +42,23 @@ For local development, you can access the H2 database console at:
 
 ## Production Deployment
 
+### 🚀 Improved Deployment Strategy (Updated)
+
+The deployment process has been optimized to address connection timeout issues:
+
+#### Key Improvements:
+- **Local Build**: Application is built in GitHub Actions environment (faster, more reliable)
+- **Artifact Transfer**: Only the JAR file is transferred to the server (much faster than full build)
+- **Connection Resilience**: Retry mechanisms for SSH connections and file transfers
+- **Parallel Processing**: Build and deploy jobs run efficiently
+- **Better Error Handling**: More robust error handling and status reporting
+
+#### Architecture:
+1. **Build Job**: Compiles the application with Maven, caches dependencies, uploads JAR artifact
+2. **Deploy Job**: Downloads JAR, transfers to server, configures systemd service, verifies deployment
+
+This eliminates the previous timeout issues caused by building complex Vaadin applications over SSH connections.
+
 ### 🚀 Quick Deploy to Server
 We've included automated deployment to `parking.zaitis.dev` using GitHub Actions.
 
