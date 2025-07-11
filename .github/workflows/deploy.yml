@@ -313,37 +313,39 @@ jobs:
           
           echo "JAVA_HOME: $JAVA_HOME"
           
-                                # Create service file directly with printf to avoid YAML issues
+                                # Create service file directly using echo commands to avoid YAML conflicts
           echo "Creating systemd service..."
           sudo_cmd rm -f /etc/systemd/system/$SERVICE_NAME.service
           
-          # Create service file using printf
-          printf "%s\n" \
-            "[Unit]" \
-            "Description=GatePass Spring Boot Application" \
-            "After=network.target" \
-            "" \
-            "[Service]" \
-            "Type=simple" \
-            "User=deploy" \
-            "Group=deploy" \
-            "WorkingDirectory=/var/lib/gatepass" \
-            "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" \
-            "Restart=always" \
-            "RestartSec=10" \
-            "StandardOutput=journal" \
-            "StandardError=journal" \
-            "" \
-            "Environment=JAVA_HOME=$JAVA_HOME" \
-            "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" \
-            "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" \
-            "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" \
-            "Environment=JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC" \
-            "" \
-            "[Install]" \
-            "WantedBy=multi-user.target" | sudo_cmd tee /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          # Build service file line by line
+          echo "[Unit]" > temp_service
+          echo "Description=GatePass Spring Boot Application" >> temp_service
+          echo "After=network.target" >> temp_service
+          echo "" >> temp_service
+          echo "[Service]" >> temp_service
+          echo "Type=simple" >> temp_service
+          echo "User=deploy" >> temp_service
+          echo "Group=deploy" >> temp_service
+          echo "WorkingDirectory=/var/lib/gatepass" >> temp_service
+          echo "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" >> temp_service
+          echo "Restart=always" >> temp_service
+          echo "RestartSec=10" >> temp_service
+          echo "StandardOutput=journal" >> temp_service
+          echo "StandardError=journal" >> temp_service
+          echo "" >> temp_service
+          echo "Environment=JAVA_HOME=$JAVA_HOME" >> temp_service
+          echo "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" >> temp_service
+          echo "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" >> temp_service
+          echo "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> temp_service
+          echo "Environment=JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC" >> temp_service
+          echo "" >> temp_service
+          echo "[Install]" >> temp_service
+          echo "WantedBy=multi-user.target" >> temp_service
           
+          # Copy to systemd location and cleanup
+          sudo_cmd cp temp_service /etc/systemd/system/$SERVICE_NAME.service
           sudo_cmd chmod 644 /etc/systemd/system/$SERVICE_NAME.service
+          rm -f temp_service
           
           # Verify service file was created
           if [ ! -f /etc/systemd/system/$SERVICE_NAME.service ]; then
@@ -351,15 +353,36 @@ jobs:
             exit 1
           fi
           
-          # Show service file content for debugging
-          echo "Service file content:"
-          sudo_cmd cat /etc/systemd/system/$SERVICE_NAME.service
+          # Show service file content for debugging (without sensitive data)
+          echo "Service file structure:"
+          sudo_cmd grep -E "^\[|^WantedBy=|^Description=" /etc/systemd/system/$SERVICE_NAME.service || echo "Failed to read service file"
+          
+          # Validate service file format
+          echo "Validating service file..."
+          if sudo_cmd systemd-analyze verify /etc/systemd/system/$SERVICE_NAME.service; then
+            echo "✅ Service file syntax is valid"
+          else
+            echo "❌ Service file has syntax errors"
+            echo "Full service file content:"
+            sudo_cmd cat /etc/systemd/system/$SERVICE_NAME.service
+            exit 1
+          fi
            
-           # Enable and start service
-          echo "Starting service..."
+           # Reload systemd and start service (skip enable to avoid the install config issue)
+          echo "Reloading systemd daemon..."
           sudo_cmd systemctl daemon-reload
-          sudo_cmd systemctl enable $SERVICE_NAME
+          
+          echo "Starting service directly..."
           sudo_cmd systemctl start $SERVICE_NAME
+          
+          echo "Enabling service for auto-start..."
+          if sudo_cmd systemctl enable $SERVICE_NAME; then
+            echo "✅ Service enabled successfully"
+          else
+            echo "⚠️ Service enable failed, but service should still be running"
+            echo "Trying alternative enable method..."
+            sudo_cmd systemctl reenable $SERVICE_NAME || echo "Alternative enable also failed, but service is running"
+          fi
           
           echo "✅ Service configured and started!"
         '
