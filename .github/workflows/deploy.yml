@@ -218,8 +218,8 @@ jobs:
         echo "Starting transfer to home directory first..."
         scp_retry "$JAR_FILE" "$REMOTE_USER@$REMOTE_HOST:~/gatepass.jar"
         
-        # Move to /tmp with proper permissions
-        echo "Moving JAR to /tmp directory..."
+        # Move to permanent location instead of /tmp
+        echo "Moving JAR to permanent location..."
         sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "
           SUDOPASS='deploy123'
           sudo_cmd() {
@@ -228,26 +228,27 @@ jobs:
           
           echo 'JAR file in home directory:'
           ls -la ~/gatepass.jar
-          echo 'Moving to /tmp with proper permissions...'
-          sudo_cmd mv ~/gatepass.jar /tmp/gatepass.jar
-          sudo_cmd chown $REMOTE_USER:$REMOTE_USER /tmp/gatepass.jar
-          sudo_cmd chmod 644 /tmp/gatepass.jar
-          echo 'JAR file after move:'
-          ls -la /tmp/gatepass.jar
+          echo 'Creating target directory and moving JAR...'
+          sudo_cmd mkdir -p /var/lib/gatepass
+          sudo_cmd mv ~/gatepass.jar /var/lib/gatepass/gatepass.jar
+          sudo_cmd chown deploy:deploy /var/lib/gatepass/gatepass.jar
+          sudo_cmd chmod 644 /var/lib/gatepass/gatepass.jar
+          echo 'JAR file in final location:'
+          ls -la /var/lib/gatepass/gatepass.jar
         "
         
         # Immediately verify the transfer was successful
-        echo "Verifying file transfer immediately after scp..."
-        if sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/gatepass.jar 2>/dev/null"; then
-          echo "✅ JAR file found on server"
+        echo "Verifying file transfer and final location..."
+        if sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /var/lib/gatepass/gatepass.jar 2>/dev/null"; then
+          echo "✅ JAR file found in final location"
           echo "File details:"
-          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/gatepass.jar; file /tmp/gatepass.jar; du -h /tmp/gatepass.jar"
+          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /var/lib/gatepass/gatepass.jar; file /var/lib/gatepass/gatepass.jar; du -h /var/lib/gatepass/gatepass.jar"
         else
-          echo "❌ JAR file NOT found on server immediately after transfer"
-          echo "Contents of /tmp directory:"
-          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/"
-          echo "Checking if file exists with different name:"
-          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "find /tmp -name '*gate*' -o -name '*.jar' 2>/dev/null"
+          echo "❌ JAR file NOT found in final location"
+          echo "Checking home directory:"
+          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la ~/"
+          echo "Checking /var/lib/gatepass directory:"
+          sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /var/lib/gatepass/ 2>/dev/null || echo 'Directory does not exist'"
           exit 1
         fi
 
@@ -289,23 +290,15 @@ jobs:
             echo "$SUDOPASS" | sudo -S "$@"
           }
           
-          # Verify JAR file exists
-          if [ ! -f /tmp/gatepass.jar ]; then
-            echo "❌ Error: JAR file not found in /tmp/"
-            ls -la /tmp/
-            exit 1
-          fi
-          
-          # Move JAR to final location
-          echo "Installing JAR file..."
-          sudo_cmd mv /tmp/gatepass.jar /var/lib/gatepass/gatepass.jar
-          sudo_cmd chmod 644 /var/lib/gatepass/gatepass.jar
-          
-          # Verify JAR was moved successfully
+          # Verify JAR file exists in final location
           if [ ! -f /var/lib/gatepass/gatepass.jar ]; then
-            echo "❌ Error: JAR file was not moved successfully"
+            echo "❌ Error: JAR file not found in /var/lib/gatepass/"
+            ls -la /var/lib/gatepass/ 2>/dev/null || echo "Directory does not exist"
             exit 1
           fi
+          
+          echo "✅ JAR file verified in final location"
+          ls -la /var/lib/gatepass/gatepass.jar
           
           # Detect Java installation
           echo "Detecting Java installation..."
@@ -320,40 +313,35 @@ jobs:
           
           echo "JAVA_HOME: $JAVA_HOME"
           
-                                # Create service file directly
+                                # Create service file directly with printf to avoid YAML issues
           echo "Creating systemd service..."
           sudo_cmd rm -f /etc/systemd/system/$SERVICE_NAME.service
           
-          # Write service file line by line
-          echo "[Unit]" | sudo_cmd tee /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Description=GatePass Spring Boot Application" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "After=network.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "[Service]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Type=simple" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "User=deploy" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Group=deploy" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "WorkingDirectory=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Restart=always" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "RestartSec=10" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "StandardOutput=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "StandardError=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Environment=JAVA_HOME=$JAVA_HOME" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "Environment=JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "NoNewPrivileges=true" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "PrivateTmp=true" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "ProtectSystem=strict" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "ReadWritePaths=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "ReadWritePaths=/var/log/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "[Install]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-          echo "WantedBy=multi-user.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          # Create service file using printf
+          printf "%s\n" \
+            "[Unit]" \
+            "Description=GatePass Spring Boot Application" \
+            "After=network.target" \
+            "" \
+            "[Service]" \
+            "Type=simple" \
+            "User=deploy" \
+            "Group=deploy" \
+            "WorkingDirectory=/var/lib/gatepass" \
+            "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" \
+            "Restart=always" \
+            "RestartSec=10" \
+            "StandardOutput=journal" \
+            "StandardError=journal" \
+            "" \
+            "Environment=JAVA_HOME=$JAVA_HOME" \
+            "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" \
+            "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" \
+            "Environment=JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC" \
+            "" \
+            "[Install]" \
+            "WantedBy=multi-user.target" | sudo_cmd tee /etc/systemd/system/$SERVICE_NAME.service > /dev/null
           
           sudo_cmd chmod 644 /etc/systemd/system/$SERVICE_NAME.service
           
