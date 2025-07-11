@@ -19,6 +19,12 @@ jobs:
         sshpass -p "${{ secrets.HETZNER_PASSWORD }}" ssh -tt -o StrictHostKeyChecking=no ${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }} '
         set -e
         
+        # Add debugging
+        echo "=== Starting GatePass Deployment ==="
+        echo "Current user: $(whoami)"
+        echo "Current directory: $(pwd)"
+        echo "Date: $(date)"
+        
         # Configuration
         DEPLOY_PATH="/var/www/parking"
         BACKUP_DIR="/var/backups/parking"
@@ -64,12 +70,31 @@ jobs:
         
         # Set Java environment (auto-detect Java installation)
         echo "Detecting Java installation..."
-        export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+        
+        # Try multiple methods to detect Java
+        if [ -d "/usr/lib/jvm/java-21-openjdk-amd64" ]; then
+            export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+        elif [ -d "/usr/lib/jvm/default-java" ]; then
+            export JAVA_HOME="/usr/lib/jvm/default-java"
+        elif command -v java >/dev/null 2>&1; then
+            # Try to auto-detect from java command
+            JAVA_PATH=$(which java)
+            if [ -L "$JAVA_PATH" ]; then
+                JAVA_REAL_PATH=$(readlink -f "$JAVA_PATH" 2>/dev/null || echo "$JAVA_PATH")
+                export JAVA_HOME=$(dirname $(dirname "$JAVA_REAL_PATH"))
+            else
+                export JAVA_HOME=$(dirname $(dirname "$JAVA_PATH"))
+            fi
+        else
+            echo "Java not found! Please install Java 21"
+            exit 1
+        fi
+        
         export PATH=$JAVA_HOME/bin:$PATH
         
         # Verify Java installation
         echo "Java version:"
-        java -version
+        java -version || (echo "Java verification failed!" && exit 1)
         echo "JAVA_HOME: $JAVA_HOME"
         echo "Java executable: $(which java)"
         
