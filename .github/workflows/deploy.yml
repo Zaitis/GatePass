@@ -63,12 +63,13 @@ jobs:
         chmod +x ./mvnw
         
         # Set Java environment
-        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+        export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
         export PATH=$JAVA_HOME/bin:$PATH
         
         # Verify Java installation
         echo "Java version:"
         java -version
+        echo "JAVA_HOME: $JAVA_HOME"
         
         # Clean and build
         echo "Building application..."
@@ -99,7 +100,7 @@ jobs:
         echo "RestartSec=10" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "StandardOutput=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "StandardError=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+        echo "Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null

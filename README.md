@@ -8,7 +8,7 @@ Parking Manager can be used as a parking management application. Application its
 
 # Technologies:
 
-    Java 17
+    Java 21
     Spring Boot 3.0.4
     Vaadin 24
     JPA
@@ -23,7 +23,7 @@ Parking Manager can be used as a parking management application. Application its
 # Getting Started
 
 ## Prerequisites
-- Java 17 or later
+- Java 21 or later
 - Maven 3.6 or later
 
 ## Running the Application
