@@ -213,13 +213,9 @@ jobs:
         echo "Transferring JAR file: $JAR_FILE"
         scp_retry "$JAR_FILE" "$REMOTE_USER@$REMOTE_HOST:/tmp/gatepass.jar"
         
-        # Transfer service file template
-        echo "Transferring service file template..."
-        scp_retry "deployment/gatepass.service" "$REMOTE_USER@$REMOTE_HOST:/tmp/gatepass.service"
-        
-        # Verify the transfers were successful
-        echo "Verifying file transfers..."
-        sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/gatepass.jar /tmp/gatepass.service"
+        # Verify the transfer was successful
+        echo "Verifying file transfer..."
+        sshpass -p "$REMOTE_PASS" ssh -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" "ls -la /tmp/gatepass.jar"
 
     - name: Deploy JAR and configure service
       run: |
@@ -290,27 +286,41 @@ jobs:
           
           echo "JAVA_HOME: $JAVA_HOME"
           
-                                # Create service file from template
+                                # Create service file directly
           echo "Creating systemd service..."
           sudo_cmd rm -f /etc/systemd/system/$SERVICE_NAME.service
           
-          # Verify service template file exists
-          if [ ! -f /tmp/gatepass.service ]; then
-            echo "❌ Error: Service template file not found"
-            exit 1
-          fi
+          # Write service file line by line
+          echo "[Unit]" | sudo_cmd tee /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Description=GatePass Spring Boot Application" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "After=network.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "[Service]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Type=simple" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "User=deploy" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Group=deploy" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "WorkingDirectory=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Restart=always" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "RestartSec=10" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "StandardOutput=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "StandardError=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Environment=JAVA_HOME=$JAVA_HOME" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "Environment=JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "NoNewPrivileges=true" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "PrivateTmp=true" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "ProtectSystem=strict" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "ReadWritePaths=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "ReadWritePaths=/var/log/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "[Install]" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+          echo "WantedBy=multi-user.target" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
           
-          # Copy template and update environment variables
-          cp /tmp/gatepass.service /tmp/gatepass_configured.service
-          
-          # Update environment variables
-          sed -i "s|Environment=JAVA_HOME=.*|Environment=JAVA_HOME=$JAVA_HOME|g" /tmp/gatepass_configured.service
-          sed -i "s|Environment=DATABASE_URL=.*|Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}|g" /tmp/gatepass_configured.service
-          sed -i "s|Environment=DATABASE_USER=.*|Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}|g" /tmp/gatepass_configured.service
-          sed -i "s|Environment=DATABASE_PASSWORD=.*|Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}|g" /tmp/gatepass_configured.service
-          
-          # Install the service file
-          sudo_cmd cp /tmp/gatepass_configured.service /etc/systemd/system/$SERVICE_NAME.service
           sudo_cmd chmod 644 /etc/systemd/system/$SERVICE_NAME.service
           
           # Verify service file was created
