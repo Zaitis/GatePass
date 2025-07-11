@@ -23,6 +23,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,8 +70,18 @@ public class CreateGatePassView extends VerticalLayout {
     }
 
     private void ask() {
-
-        gatePassService.updateGatePass(cars.getValue().getGatePass().getId(), cars.getValue().getGatePass());
+        if (cars.getValue() == null) {
+            return; // No car selected
+        }
+        
+        // Create a new gate pass for the selected car
+        GatePass gatePass = GatePass.builder()
+                .cars(cars.getValue())
+                .createdDate(LocalDateTime.now())
+                .isAccepted(false)
+                .build();
+        
+        gatePassService.addGatePass(gatePass);
         UI.getCurrent().navigate("/dashboard");
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class SecurityService {
 
     public void logout(){
-        UI.getCurrent().getPage().setLocation("/parking"); //on production need update to /parking
+        UI.getCurrent().getPage().setLocation("/");
         SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
         logoutHandler.logout(
                 VaadinServletRequest.getCurrent().getHttpServletRequest(),

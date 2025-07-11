@@ -60,9 +60,9 @@ public class SecurityConfig extends VaadinWebSecurity {
 
                     if (authentication.getAuthorities().stream()
                             .anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"))) {
-                        response.sendRedirect("/parking/admin-dashboard");
+                        response.sendRedirect("/admin-dashboard");
                     } else {
-                        response.sendRedirect("/parking/dashboard");
+                        response.sendRedirect("/dashboard");
                     }
                 });
     }
