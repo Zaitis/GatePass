@@ -9,7 +9,7 @@ Parking Manager can be used as a parking management application. Application its
 # Technologies:
 
     Java 21
-    Spring Boot 3.0.4
+    Spring Boot 3.2.0
     Vaadin 24
     JPA
     Spring Security
