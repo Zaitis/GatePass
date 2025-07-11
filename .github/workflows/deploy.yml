@@ -62,14 +62,16 @@ jobs:
         echo "Setting Maven wrapper permissions..."
         chmod +x ./mvnw
         
-        # Set Java environment
-        export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+        # Set Java environment (auto-detect Java installation)
+        echo "Detecting Java installation..."
+        export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
         export PATH=$JAVA_HOME/bin:$PATH
         
         # Verify Java installation
         echo "Java version:"
         java -version
         echo "JAVA_HOME: $JAVA_HOME"
+        echo "Java executable: $(which java)"
         
         # Clean and build
         echo "Building application..."
@@ -95,12 +97,12 @@ jobs:
         echo "User=$USER" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "Group=$USER" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "WorkingDirectory=/var/lib/gatepass" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+        echo "ExecStart=/usr/bin/java -jar /var/lib/gatepass/gatepass.jar --spring.profiles.active=production --server.port=8081" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "Restart=always" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "RestartSec=10" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "StandardOutput=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "StandardError=journal" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
-        echo "Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
+        echo "Environment=JAVA_HOME=$JAVA_HOME" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "Environment=DATABASE_URL=${{ secrets.DATABASE_URL }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "Environment=DATABASE_USER=${{ secrets.DATABASE_USER }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
         echo "Environment=DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" | sudo_cmd tee -a /etc/systemd/system/$SERVICE_NAME.service > /dev/null
@@ -125,7 +127,7 @@ jobs:
         # Check if application is responding
         echo "Checking application health..."
         for i in {1..10}; do
-            if curl -s http://localhost:8080 > /dev/null; then
+            if curl -s http://localhost:8081 > /dev/null; then
                 echo "Application is responding!"
                 break
             else
@@ -147,7 +149,7 @@ jobs:
             echo "    client_header_timeout 300s;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
             echo "" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
             echo "    location / {" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
-            echo "        proxy_pass http://localhost:8080;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
+            echo "        proxy_pass http://localhost:8081;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
             echo "        proxy_set_header Host \$host;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
             echo "        proxy_set_header X-Real-IP \$remote_addr;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null
             echo "        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;" | sudo_cmd tee -a /etc/nginx/sites-available/parking.zaitis.dev > /dev/null

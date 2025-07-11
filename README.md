@@ -154,4 +154,4 @@ Uses Liquibase for database versioning and migrations.
 
 [![Deploy GatePass to Hetzner](https://github.com/Zaitis/GatePass/actions/workflows/deploy.yml/badge.svg)](https://github.com/Zaitis/GatePass/actions/workflows/deploy.yml)
 
-**Live Application**: http://parking.zaitis.dev
+**Live Application**: http://parking.zaitis.dev (port 8081)
